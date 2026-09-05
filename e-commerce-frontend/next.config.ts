@@ -16,6 +16,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'canvasia.com.tr' },
       { protocol: 'https', hostname: 'res.cloudinary.com' },
       { protocol: 'https', hostname: 'files.catbox.moe' },
+      { protocol: 'http', hostname: 'localhost', port: '8085' },
       { protocol: 'http', hostname: 'localhost', port: '8080' },
     ],
     // These external hosts block server-side fetches from the Next.js optimizer.
