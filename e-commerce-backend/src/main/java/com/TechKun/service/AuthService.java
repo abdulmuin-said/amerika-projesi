@@ -14,6 +14,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.impl.DefaultClaims;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -46,6 +47,9 @@ public class AuthService {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Value("${app.frontend-url:${stripe.frontend-url:http://localhost:3000}}")
+    private String frontendUrl;
 
     public ShopUser register(RegistrationPayload payload) {
         Assert.notNull(payload, "Payload must not be null.");
@@ -144,7 +148,7 @@ public class AuthService {
 
         JwtUtils.JwtToken jwtToken = this.jwtUtil.generateToken(user.getEmail(), claims);
 
-        String resetLink = "http://localhost:3000/auth/reset-password?token=" + jwtToken.getToken();
+        String resetLink = frontendUrl + "/auth/reset-password?token=" + jwtToken.getToken();
         emailService.sendResetPasswordEmail(user.getEmail(), resetLink);
 
         return Map.of(

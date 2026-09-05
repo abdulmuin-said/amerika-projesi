@@ -41,7 +41,7 @@ public class PaymentTransaction {
     @Column(name = "installment")
     private Integer installment;
 
-    // 1 = clean, -1 = fraud flagged by iyzico
+    // 1 = clean, -1 = fraud flagged by payment gateway / Radar
     @Column(name = "fraud_status")
     private Integer fraudStatus;
 
