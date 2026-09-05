@@ -1,0 +1,62 @@
+services:
+  # ── PostgreSQL Database ─────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: novacanvas-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-novacanvas_db}
+      POSTGRES_USER: ${POSTGRES_USER:-novacanvas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-novacanvas_secure_pass_2025}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./novacanvas_seed.sql:/docker-entrypoint-initdb.d/01-novacanvas_seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-novacanvas} -d ${POSTGRES_DB:-novacanvas_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Spring Boot Backend ────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./e-commerce-backend
+      dockerfile: Dockerfile
+    container_name: novacanvas-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-novacanvas_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-novacanvas}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-novacanvas_secure_pass_2025}
+      STRIPE_API_KEY: ${STRIPE_API_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-pk_test_placeholder}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      JWT_SECRET: ${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://frontend:3000}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+
+  # ── Next.js 15 Frontend ────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./e-commerce-frontend
+      dockerfile: Dockerfile
+    container_name: novacanvas-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: production
+      SERVER_URL: http://backend:8080
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-pk_test_placeholder}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+
+volumes:
+  postgres_data:
+    name: novacanvas_postgres_data
