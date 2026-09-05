@@ -42,8 +42,13 @@ export default function Footer() {
 
                     {/* Brand */}
                     <div>
-                        <Link href="/" className="font-display text-3xl tracking-widest text-white block mb-4">
-                            NovaCanvas Studios
+                        <Link href="/" className="inline-flex flex-col items-start leading-none group mb-4 select-none">
+                            <span className="font-display text-3xl md:text-4xl font-semibold tracking-[0.14em] text-white group-hover:text-[#e4cf8d] transition-colors uppercase">
+                                NovaCanvas
+                            </span>
+                            <span className="text-[11px] md:text-xs font-sans font-medium tracking-[0.45em] text-[#c9a84c] uppercase pl-1 mt-1">
+                                Studios
+                            </span>
                         </Link>
                         <p className="text-white/45 text-sm leading-relaxed max-w-sm">
                             Museum-grade panoramic wall art curated for modern architectural and residential spaces. Each piece is hand-stretched on heirloom pine chassis with archival pigment inks.

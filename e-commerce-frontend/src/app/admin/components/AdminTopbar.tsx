@@ -35,8 +35,15 @@ export default function AdminTopbar({ onToggleSidebar }: { onToggleSidebar: () =
             </button>
 
             {/* Brand */}
-            <div className="flex items-center gap-2 shrink-0">
-                <span className="font-display text-lg tracking-widest text-gray-900">NovaCanvas Studios</span>
+            <div className="flex items-center gap-3 shrink-0">
+                <Link href="/" className="flex flex-col items-start leading-none select-none">
+                    <span className="font-display text-lg font-semibold tracking-[0.12em] text-gray-900 uppercase">
+                        NovaCanvas
+                    </span>
+                    <span className="text-[7.5px] font-sans font-medium tracking-[0.4em] text-[#c9a84c] uppercase pl-0.5 mt-0.5">
+                        Studios
+                    </span>
+                </Link>
                 <span className="text-[10px] font-semibold tracking-widest uppercase text-gray-400 border border-gray-200 rounded px-1.5 py-0.5">
                     Admin
                 </span>

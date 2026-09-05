@@ -145,8 +145,13 @@ export default function Header() {
                                 <SheetHeader className="px-5 py-4 border-b border-border shrink-0">
                                     <SheetTitle className="text-left">
                                         <SheetClose asChild>
-                                            <Link href="/" className="font-display text-xl tracking-widest text-foreground">
-                                                NovaCanvas Studios
+                                            <Link href="/" className="flex flex-col items-start leading-none select-none">
+                                                <span className="font-display text-xl font-semibold tracking-[0.14em] text-foreground uppercase">
+                                                    NovaCanvas
+                                                </span>
+                                                <span className="text-[8.5px] font-sans font-medium tracking-[0.42em] text-[#c9a84c] uppercase pl-1 mt-0.5">
+                                                    Studios
+                                                </span>
                                             </Link>
                                         </SheetClose>
                                     </SheetTitle>
@@ -212,8 +217,13 @@ export default function Header() {
                     </div>
 
                     {/* Center: logo absolutely centered */}
-                    <Link href="/" className="absolute left-1/2 -translate-x-1/2 font-display text-xl tracking-widest text-white whitespace-nowrap">
-                        NovaCanvas Studios
+                    <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center leading-none text-center whitespace-nowrap select-none group">
+                        <span className="font-display text-[19px] font-semibold tracking-[0.14em] text-white uppercase">
+                            NovaCanvas
+                        </span>
+                        <span className="text-[8px] font-sans font-medium tracking-[0.45em] text-[#c9a84c] uppercase pl-1 mt-0.5">
+                            Studios
+                        </span>
                     </Link>
 
                     {/* Right: account + cart */}
@@ -248,9 +258,14 @@ export default function Header() {
                 */}
                 <div className="hidden sm:grid h-full grid-cols-[auto_1fr_auto] items-center gap-8 md:gap-12 max-w-[1600px] mx-auto w-full px-6 md:px-10">
 
-                    {/* Logo — left, white on dark */}
-                    <Link href="/" className="font-display text-2xl md:text-3xl tracking-widest text-white shrink-0">
-                        NovaCanvas Studios
+                    {/* Logo — left, white on dark with stacked luxury subline */}
+                    <Link href="/" className="flex flex-col items-start leading-none group shrink-0 select-none">
+                        <span className="font-display text-[26px] md:text-[28px] font-semibold tracking-[0.14em] text-white group-hover:text-[#e4cf8d] transition-colors uppercase">
+                            NovaCanvas
+                        </span>
+                        <span className="text-[9.5px] font-sans font-medium tracking-[0.45em] text-[#c9a84c] uppercase pl-1 mt-0.5">
+                            Studios
+                        </span>
                     </Link>
 
                     {/* Search — centered, moderate width */}

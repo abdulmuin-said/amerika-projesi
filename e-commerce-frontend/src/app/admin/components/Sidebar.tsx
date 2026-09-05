@@ -86,7 +86,14 @@ export default function Sidebar({ collapsed, mobileOpen, onMobileClose }: Sideba
                 )}
             >
                 <div className="h-14 flex items-center justify-between px-4 border-b border-gray-200 shrink-0">
-                    <span className="font-display text-lg tracking-widest text-gray-900">NovaCanvas Studios</span>
+                    <Link href="/" className="flex flex-col items-start leading-none select-none">
+                        <span className="font-display text-lg font-semibold tracking-[0.12em] text-gray-900 uppercase">
+                            NovaCanvas
+                        </span>
+                        <span className="text-[7.5px] font-sans font-medium tracking-[0.4em] text-[#c9a84c] uppercase pl-0.5 mt-0.5">
+                            Studios
+                        </span>
+                    </Link>
                     <button
                         onClick={onMobileClose}
                         className="p-1.5 rounded-md text-gray-400 hover:bg-gray-100 transition-colors"
