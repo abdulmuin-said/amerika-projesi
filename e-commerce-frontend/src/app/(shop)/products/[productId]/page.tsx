@@ -31,6 +31,7 @@ import { CategoryDetails } from "@/types/domains/category";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { addToWishlistAsync, removeFromWishlistAsync } from "@/store/slices/wishlistSlice";
+import { ProductDetailPaymentTrustBox } from "@/app/components/PaymentBadges";
 
 type VariationMap = {
     [variationId: number]: {
@@ -976,16 +977,8 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                         </Button>
                     </div>
 
-                    {/* Secure payment — compact inline */}
-                    <div className="flex items-center justify-between border rounded-lg px-4 py-2.5 bg-stone-50/60">
-                        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">Guaranteed Secure Checkout</span>
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-stone-700">
-                            <span className="px-2 py-0.5 rounded bg-white border border-stone-200 shadow-2xs tracking-wider text-[#635BFF]">STRIPE</span>
-                            <span className="px-1.5 py-0.5 rounded bg-white border border-stone-200 shadow-2xs text-[#1A1F71]">VISA</span>
-                            <span className="px-1.5 py-0.5 rounded bg-white border border-stone-200 shadow-2xs text-[#EB001B]">MC</span>
-                            <span className="px-1.5 py-0.5 rounded bg-white border border-stone-200 shadow-2xs text-[#006FCF]">AMEX</span>
-                        </div>
-                    </div>
+                    {/* Secure payment trust box with official SVG logos */}
+                    <ProductDetailPaymentTrustBox />
 
                     {/* Shipping & Delivery */}
                     {getShippingMethodFetch.data && (

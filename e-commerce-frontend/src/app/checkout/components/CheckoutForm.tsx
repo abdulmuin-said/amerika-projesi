@@ -20,6 +20,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { COUNTRY_OPTIONS } from "@/lib/countries";
 import { CreditCard, Truck, MapPin, Home, ShieldCheck, Sparkles, Lock } from "lucide-react";
 import { CreatePaymentIntentRequest } from "@/services/stripe";
+import { VisaIcon, MastercardIcon, AmexIcon, DiscoverIcon } from "@/app/components/PaymentBadges";
 
 // ─── Validation schema ────────────────────────────────────────────────────────
 
@@ -392,7 +393,12 @@ export default function CheckoutForm({
                                                 {cardType.label}
                                             </span>
                                         ) : (
-                                            <span className="text-xs text-muted-foreground">Visa, MC, Amex, Discover</span>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="inline-flex items-center justify-center h-5 w-8 rounded bg-white shadow-2xs border border-stone-200 overflow-hidden" title="Visa"><VisaIcon className="h-3.5 w-auto" /></span>
+                                                <span className="inline-flex items-center justify-center h-5 w-8 rounded bg-white shadow-2xs border border-stone-200 overflow-hidden" title="Mastercard"><MastercardIcon className="h-3.5 w-auto" /></span>
+                                                <span className="inline-flex items-center justify-center h-5 w-8 rounded bg-white shadow-2xs border border-stone-200 overflow-hidden" title="American Express"><AmexIcon className="h-3.5 w-auto" /></span>
+                                                <span className="inline-flex items-center justify-center h-5 w-8 rounded bg-white shadow-2xs border border-stone-200 overflow-hidden" title="Discover"><DiscoverIcon className="h-3.5 w-auto" /></span>
+                                            </div>
                                         )}
                                     </div>
                                 </div>

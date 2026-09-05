@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Instagram, Twitter, Facebook, Youtube } from "lucide-react";
+import { PaymentBadgesGroup } from "./PaymentBadges";
 
 const shopLinks = [
     { label: "All Products", href: "/products" },
@@ -57,13 +58,7 @@ export default function Footer() {
                             <p className="text-[10px] tracking-[0.2em] uppercase text-[#c9a84c]/80 mb-2.5 flex items-center gap-1.5 font-medium">
                                 <span>Guaranteed Safe & Secure Checkout via Stripe</span>
                             </p>
-                            <div className="flex flex-wrap items-center gap-2 pt-1">
-                                <span className="bg-white/10 text-white font-semibold text-xs px-2.5 py-1 rounded border border-white/15 tracking-wider">STRIPE</span>
-                                <span className="bg-white/10 text-white font-semibold text-xs px-2.5 py-1 rounded border border-white/15">VISA</span>
-                                <span className="bg-white/10 text-white font-semibold text-xs px-2.5 py-1 rounded border border-white/15">MASTERCARD</span>
-                                <span className="bg-white/10 text-white font-semibold text-xs px-2.5 py-1 rounded border border-white/15">AMEX</span>
-                                <span className="bg-white/10 text-white font-semibold text-xs px-2.5 py-1 rounded border border-white/15">APPLE PAY</span>
-                            </div>
+                            <PaymentBadgesGroup theme="dark" className="pt-1.5" />
                         </div>
                     </div>
 
