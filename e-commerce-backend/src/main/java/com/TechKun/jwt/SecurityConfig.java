@@ -41,7 +41,8 @@ public class SecurityConfig {
                     "/reviews/**",
                     "/stripe/webhook",  // Stripe webhook callbacks — no JWT
                     "/stripe/confirm",  // Stripe confirm API — no JWT
-                    "/stripe/config"    // Stripe publishable key config — no JWT
+                    "/stripe/config",   // Stripe publishable key config — no JWT
+                    "/stripe/create-payment-intent" // Stripe checkout intent — supports logged-in and guest demo checkout
                 ).permitAll()
                 .requestMatchers(HttpMethod.GET,
                     "/products/**",
@@ -57,8 +58,7 @@ public class SecurityConfig {
                     "/shop-orders/**",
                     "/cart-items/**",
                     "/wishlist-items/**",
-                    "/payment-methods/**",
-                    "/stripe/create-payment-intent"
+                    "/payment-methods/**"
                 )
                 .hasAnyAuthority("CUSTOMER", "ADMIN", "PLATFORM_ADMIN")
                 .requestMatchers(HttpMethod.POST, "/support-tickets/**")

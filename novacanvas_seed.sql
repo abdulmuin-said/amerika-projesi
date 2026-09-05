@@ -114,7 +114,14 @@ CREATE TABLE IF NOT EXISTS product_variant_property (
 
 CREATE TABLE IF NOT EXISTS payment_method (
     payment_method_id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255),
+    card_holder_name VARCHAR(255),
+    last4 VARCHAR(4),
+    provider_token VARCHAR(255),
+    expiry_month VARCHAR(2),
+    expiry_year VARCHAR(2),
+    is_default BOOLEAN DEFAULT FALSE,
+    user_id INT REFERENCES shop_user(user_id)
 );
 
 CREATE TABLE IF NOT EXISTS shop_order (
