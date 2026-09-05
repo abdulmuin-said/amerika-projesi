@@ -30,6 +30,8 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      PORT: 8080
+      SERVER_PORT: 8080
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-novacanvas_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-novacanvas}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-novacanvas_secure_pass_2025}
