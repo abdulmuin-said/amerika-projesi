@@ -39,6 +39,7 @@ public class SecurityConfig {
                     "/webjars/**",
                     "/auth/**",
                     "/reviews/**",
+                    "/paytr/**",        // PayTR endpoints (get-token, callback, confirm-test) — no JWT
                     "/stripe/webhook",  // Stripe webhook callbacks — no JWT
                     "/stripe/confirm",  // Stripe confirm API — no JWT
                     "/stripe/config",   // Stripe publishable key config — no JWT

@@ -18,8 +18,8 @@ import { toast } from "sonner";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { COUNTRY_OPTIONS } from "@/lib/countries";
 import { CreditCard, Truck, MapPin, Home, ShieldCheck, Sparkles, Lock } from "lucide-react";
-import { CreatePaymentIntentRequest } from "@/services/stripe";
-import { VisaIcon, MastercardIcon, AmexIcon, DiscoverIcon } from "@/app/components/PaymentBadges";
+import { PayTRTokenRequest } from "@/services/paytr";
+import { PayTRIcon, TroyIcon, VisaIcon, MastercardIcon, AmexIcon, DiscoverIcon } from "@/app/components/PaymentBadges";
 import { useLocalization } from "@/lib/useLocalization";
 
 // ─── Validation schema ────────────────────────────────────────────────────────
@@ -55,6 +55,7 @@ type FieldValues = z.infer<typeof checkoutSchema>;
 
 function detectCardType(cardNumber: string): { label: string; color: string } | null {
     const num = cardNumber.replace(/\s/g, "");
+    if (/^9792/.test(num)) return { label: "Troy", color: "text-blue-700 font-semibold" };
     if (/^4/.test(num)) return { label: "Visa", color: "text-blue-600 font-semibold" };
     if (/^5[1-5]/.test(num) || /^2[2-7]/.test(num)) return { label: "Mastercard", color: "text-orange-600 font-semibold" };
     if (/^3[47]/.test(num)) return { label: "Amex", color: "text-emerald-600 font-semibold" };
@@ -70,7 +71,7 @@ export interface CheckoutFormSubmitData {
     expireMonth: string;
     expireYear: string;
     cvc: string;
-    intentRequest: CreatePaymentIntentRequest;
+    paytrRequest: PayTRTokenRequest;
 }
 
 interface CheckoutFormProps {
@@ -90,7 +91,7 @@ export default function CheckoutForm({
     subtotalAmount,
     currentAddress,
 }: CheckoutFormProps) {
-    const { t, formatPrice, locale } = useLocalization();
+    const { t, formatPrice, locale, currency } = useLocalization();
 
     function calculateShipping(): number {
         let total = 0;
@@ -138,12 +139,12 @@ export default function CheckoutForm({
     };
 
     const handleAutoFillTestCard = () => {
-        form.setValue("cardHolderName", "Jane Doe", { shouldValidate: true });
+        form.setValue("cardHolderName", locale === "tr" ? "Ahmet Yılmaz" : "Jane Doe", { shouldValidate: true });
         form.setValue("cardNumber", "4242 4242 4242 4242", { shouldValidate: true });
         form.setValue("expireMonth", "12", { shouldValidate: true });
         form.setValue("expireYear", "28", { shouldValidate: true });
         form.setValue("cvc", "123", { shouldValidate: true });
-        toast.success(locale === "tr" ? "Stripe 4242 test kartı bilgileri yüklendi!" : "Stripe 4242 test card details loaded!");
+        toast.success(locale === "tr" ? "PayTR test kartı bilgileri yüklendi!" : "PayTR test card details loaded!");
     };
 
     const handleSubmit = (data: FieldValues) => {
@@ -199,13 +200,13 @@ export default function CheckoutForm({
             };
         }
 
-        const intentRequest: CreatePaymentIntentRequest = {
+        const paytrRequest: PayTRTokenRequest = {
             items: cartItems.map((item) => ({
                 productVariantId: item.productVariantId,
                 shippingMethodId: shippingMethods[item.cartItemId]?.shippingMethodId || 1,
                 price: item.price,
                 quantity: item.quantity,
-                productName: (item as { productName?: string }).productName ?? "NovaCanvas Artwork",
+                productName: (item as { productName?: string }).productName ?? "NovaLux Fine Art",
                 categoryName: "Canvas Prints",
             })),
             shippingAddressId,
@@ -215,6 +216,7 @@ export default function CheckoutForm({
             taxAmount,
             discountAmount,
             totalAmount: billTotal,
+            currency: currency === "TRY" ? "TRY" : "USD",
         };
 
         onSubmit({
@@ -223,7 +225,7 @@ export default function CheckoutForm({
             expireMonth: data.expireMonth,
             expireYear: data.expireYear,
             cvc: data.cvc,
-            intentRequest,
+            paytrRequest,
         });
     };
 
@@ -238,7 +240,7 @@ export default function CheckoutForm({
                             <div className="flex items-center gap-2 text-xs text-muted-foreground bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
                                 <Lock className="w-3.5 h-3.5 text-emerald-600" />
                                 <span className="text-emerald-700 font-medium">
-                                    {locale === "tr" ? "Stripe 256-Bit SSL Şifreli" : "Stripe 256-Bit SSL Encrypted"}
+                                    PayTR 256-Bit SSL & 3D Secure
                                 </span>
                             </div>
                         </div>
@@ -360,21 +362,23 @@ export default function CheckoutForm({
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-semibold text-gray-800">2. {t("checkout.paymentDetails")}</h3>
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                    <span className="font-semibold text-slate-700">Powered by</span>
-                                    <span className="font-extrabold text-[#635BFF] text-sm tracking-tight">stripe</span>
+                                    <span className="font-semibold text-slate-700">{locale === "tr" ? "Altyapı:" : "Gateway:"}</span>
+                                    <span className="font-extrabold text-[#0B1A30] text-sm tracking-tight bg-slate-100 border border-slate-300/80 px-2 py-0.5 rounded">
+                                        Pay<span className="text-[#00D09C]">TR</span>
+                                    </span>
                                 </div>
                             </div>
 
                             <div className="p-6 border rounded-xl shadow-sm bg-white space-y-5">
                                 {/* Demo Test Card Autofill Helper */}
-                                <div className="bg-indigo-50/80 border border-indigo-200/80 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                                <div className="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                                     <div>
-                                        <div className="flex items-center gap-2 text-indigo-950 font-semibold text-sm">
-                                            <Sparkles className="w-4 h-4 text-indigo-600" />
-                                            {locale === "tr" ? "Canlı Test / Sandbox Kartı" : "Live Showcase Sandbox Card"}
+                                        <div className="flex items-center gap-2 text-emerald-950 font-semibold text-sm">
+                                            <Sparkles className="w-4 h-4 text-emerald-600" />
+                                            {locale === "tr" ? "PayTR Canlı Test / Sandbox Kartı" : "PayTR Live Showcase Sandbox Card"}
                                         </div>
-                                        <p className="text-xs text-indigo-700 mt-0.5">
-                                            {locale === "tr" ? "Stripe test kartı ile güvenle deneyin:" : "Test live checkout using standard Stripe card"} <span className="font-mono font-medium">4242 •••• •••• 4242</span>
+                                        <p className="text-xs text-emerald-700 mt-0.5">
+                                            {locale === "tr" ? "PayTR test kartı ile güvenle deneyin (Troy / Visa / Mastercard):" : "Test live checkout using standard PayTR sandbox card:"} <span className="font-mono font-medium">4242 •••• •••• 4242</span>
                                         </p>
                                     </div>
                                     <Button
@@ -382,7 +386,7 @@ export default function CheckoutForm({
                                         size="sm"
                                         variant="outline"
                                         onClick={handleAutoFillTestCard}
-                                        className="bg-white hover:bg-indigo-50 border-indigo-300 text-indigo-700 font-medium text-xs whitespace-nowrap shadow-sm"
+                                        className="bg-white hover:bg-emerald-50 border-emerald-300 text-emerald-700 font-medium text-xs whitespace-nowrap shadow-sm"
                                     >
                                         {locale === "tr" ? "Test Kartını Doldur" : "Auto-Fill Test Card"}
                                     </Button>
@@ -402,6 +406,8 @@ export default function CheckoutForm({
                                             </span>
                                         ) : (
                                             <div className="flex items-center gap-1.5">
+                                                <span className="inline-flex items-center justify-center h-5 w-8 rounded bg-white shadow-2xs border border-stone-200 overflow-hidden" title="PayTR"><PayTRIcon className="h-3.5 w-auto" /></span>
+                                                <span className="inline-flex items-center justify-center h-5 w-8 rounded bg-white shadow-2xs border border-stone-200 overflow-hidden" title="TROY"><TroyIcon className="h-3.5 w-auto" /></span>
                                                 <span className="inline-flex items-center justify-center h-5 w-8 rounded bg-white shadow-2xs border border-stone-200 overflow-hidden" title="Visa"><VisaIcon className="h-3.5 w-auto" /></span>
                                                 <span className="inline-flex items-center justify-center h-5 w-8 rounded bg-white shadow-2xs border border-stone-200 overflow-hidden" title="Mastercard"><MastercardIcon className="h-3.5 w-auto" /></span>
                                                 <span className="inline-flex items-center justify-center h-5 w-8 rounded bg-white shadow-2xs border border-stone-200 overflow-hidden" title="American Express"><AmexIcon className="h-3.5 w-auto" /></span>

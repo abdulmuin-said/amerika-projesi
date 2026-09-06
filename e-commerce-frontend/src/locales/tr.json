@@ -75,7 +75,7 @@
   },
   "footer": {
     "brandDescription": "Lüks konutlar ve prestijli mimari alanlar için küratörlükle hazırlanan müze kalitesinde duvar tabloları, temperli cam eserler ve tasarım aynalar.",
-    "guaranteedCheckout": "Stripe ile 256-Bit SSL Korumalı Güvenli Ödeme",
+    "guaranteedCheckout": "PayTR ile 256-Bit SSL Korumalı Güvenli Ödeme",
     "newsletterTitle": "E-Bülten",
     "newsletterDesc": "Yeni koleksiyon lansmanlarına, özel sergi açılışlarına ve ayrıcalıklı tekliflere ilk siz ulaşın.",
     "newsletterPlaceholder": "E-posta adresinizi giriniz",
@@ -269,7 +269,7 @@
     "expireMonth": "Ay",
     "expireYear": "Yıl",
     "cvc": "CVC",
-    "securePaymentNotice": "Kart bilgileriniz 256-bit SSL ve Stripe güvencesiyle şifrelenerek işlenir.",
+    "securePaymentNotice": "Kart bilgileriniz 256-bit SSL ve PayTR güvencesiyle şifrelenerek işlenir.",
     "placeOrder": "Ödemeyi Tamamla ve Sipariş Ver",
     "processingPayment": "Güvenli Ödeme İşleniyor...",
     "orderSuccess": "Ödeme Başarıyla Tamamlandı!",

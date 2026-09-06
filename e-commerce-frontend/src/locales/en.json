@@ -75,7 +75,7 @@
   },
   "footer": {
     "brandDescription": "Museum-grade fine wall art, tempered glass masterworks, and designer architectural mirrors curated for luxury residential and hospitality spaces.",
-    "guaranteedCheckout": "Guaranteed Safe & Secure Checkout via Stripe",
+    "guaranteedCheckout": "Guaranteed Safe & Secure Checkout via PayTR",
     "newsletterTitle": "Newsletter",
     "newsletterDesc": "Get early access to private vernissages, new gallery arrivals, and archival edition releases.",
     "newsletterPlaceholder": "Your email address",
@@ -105,7 +105,7 @@
     },
     "valueProps": {
       "securePayment": "Secure Payment",
-      "securePaymentDesc": "256-bit encrypted global checkout via Stripe",
+      "securePaymentDesc": "256-bit encrypted global checkout via PayTR",
       "freeShipping": "Free Worldwide Delivery",
       "freeShippingDesc": "Insured courier shipping on all orders",
       "deliveredWithCare": "Museum-Grade Care",
@@ -269,7 +269,7 @@
     "expireMonth": "MM",
     "expireYear": "YY",
     "cvc": "CVC",
-    "securePaymentNotice": "Your payment information is encrypted and securely processed by Stripe.",
+    "securePaymentNotice": "Your payment information is encrypted and securely processed by PayTR.",
     "placeOrder": "Authorize Payment & Place Order",
     "processingPayment": "Processing Secure Payment...",
     "orderSuccess": "Payment Authorized Successfully!",

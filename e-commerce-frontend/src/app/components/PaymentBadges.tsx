@@ -61,6 +61,25 @@ export function GooglePayIcon({ className = "h-4 w-auto" }: { className?: string
     );
 }
 
+export function PayTRIcon({ className = "h-4 w-auto" }: { className?: string }) {
+    return (
+        <svg className={className} viewBox="0 0 42 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="PayTR">
+            <rect width="42" height="24" rx="3" fill="#0B1A30" />
+            <text x="14" y="16.5" textAnchor="middle" fill="#FFFFFF" fontFamily="system-ui, -apple-system, sans-serif" fontWeight="800" fontSize="10" letterSpacing="-0.3">Pay</text>
+            <text x="31" y="16.5" textAnchor="middle" fill="#00D09C" fontFamily="system-ui, -apple-system, sans-serif" fontWeight="900" fontSize="10" letterSpacing="0.2">TR</text>
+        </svg>
+    );
+}
+
+export function TroyIcon({ className = "h-4 w-auto" }: { className?: string }) {
+    return (
+        <svg className={className} viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="TROY">
+            <rect width="36" height="24" rx="3" fill="#0072CE" />
+            <text x="18" y="16" textAnchor="middle" fill="#FFFFFF" fontFamily="system-ui, -apple-system, sans-serif" fontWeight="900" fontSize="8.5" letterSpacing="0.8">TROY</text>
+        </svg>
+    );
+}
+
 export function StripeIcon({ className = "h-4 w-auto" }: { className?: string }) {
     return (
         <svg className={className} viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Stripe">
@@ -93,7 +112,8 @@ export function PaymentBadgesGroup({ theme = "light", className = "" }: PaymentB
 
     return (
         <div className={`flex items-center flex-wrap gap-1.5 sm:gap-2 ${className}`}>
-            <span className={badgeClass} title="Stripe Secure Payments"><StripeIcon className="h-4 w-auto" /></span>
+            <span className={badgeClass} title="PayTR Güvenli Ödeme"><PayTRIcon className="h-4 w-auto" /></span>
+            <span className={badgeClass} title="TROY Yerli Kart"><TroyIcon className="h-4 w-auto" /></span>
             <span className={badgeClass} title="Visa"><VisaIcon className="h-4 w-auto" /></span>
             <span className={badgeClass} title="Mastercard"><MastercardIcon className="h-4 w-auto" /></span>
             <span className={badgeClass} title="American Express"><AmexIcon className="h-4 w-auto" /></span>

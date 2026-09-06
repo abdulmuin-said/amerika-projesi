@@ -2,7 +2,7 @@
 "use client";
 
 import useDataFetch from "@/hooks/use-data-fetch";
-import * as stripeServices from "@/services/stripe";
+import * as paytrServices from "@/services/paytr";
 import * as shippingServices from "@/services/shippingMethod";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { ShippingMethod } from "@/types/domains/shipping_method";
@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import CheckoutForm, { CheckoutFormSubmitData } from "./components/CheckoutForm";
 import { clearBuyNowItem } from "@/store/slices/buyNowSlice";
 import { clearCart } from "@/store/slices/cartSlice";
+import { useLocalization } from "@/lib/useLocalization";
 
 const shippingMethodsMap: Record<number, ShippingMethod> = {};
 
@@ -21,6 +22,7 @@ function CheckoutPageInner() {
     const searchParams = useSearchParams();
     const isBuyNow = searchParams.get("mode") === "buynow";
     const paymentResult = searchParams.get("payment");
+    const { locale } = useLocalization();
 
     const { items: cartItems, totalAmount } = useAppSelector((state) => state.cart);
     const buyNowItem = useAppSelector((state) => state.buyNow.item);
@@ -32,13 +34,13 @@ function CheckoutPageInner() {
         if (paymentResult === "failed") {
             const reason = searchParams.get("reason");
             const messages: Record<string, string> = {
-                "card_declined": "Payment card was declined. Please try again with a valid card.",
-                "confirmation_failed": "Payment could not be confirmed. Please contact concierge.",
-                "server_error": "A payment processing error occurred. Please try again.",
+                "card_declined": locale === "tr" ? "Ödeme kartı reddedildi. Lütfen geçerli bir kart ile tekrar deneyin." : "Payment card was declined. Please try again with a valid card.",
+                "confirmation_failed": locale === "tr" ? "Ödeme onaylanamadı. Lütfen müşteri hizmetleri ile iletişime geçin." : "Payment could not be confirmed. Please contact concierge.",
+                "server_error": locale === "tr" ? "PayTR ödeme işleminde bir hata oluştu. Lütfen tekrar deneyin." : "A payment processing error occurred. Please try again.",
             };
-            toast.error(messages[reason ?? ""] ?? "Payment failed. Please try again.");
+            toast.error(messages[reason ?? ""] ?? (locale === "tr" ? "Ödeme başarısız oldu. Lütfen tekrar deneyin." : "Payment failed. Please try again."));
         }
-    }, [paymentResult, searchParams]);
+    }, [paymentResult, searchParams, locale]);
 
     useEffect(() => {
         if (!isBuyNow) dispatch(clearBuyNowItem());
@@ -53,8 +55,8 @@ function CheckoutPageInner() {
         [isBuyNow, buyNowItem, totalAmount]
     );
 
-    const createPaymentIntentFetch = useDataFetch(stripeServices.createPaymentIntent);
-    const confirmPaymentFetch = useDataFetch(stripeServices.confirmPayment);
+    const getPayTRTokenFetch = useDataFetch(paytrServices.getPayTRToken);
+    const confirmPayTRFetch = useDataFetch(paytrServices.confirmPayTRTest);
     const getShippingMethodByVariant = useDataFetch(shippingServices.getShippingMethodByVariantId);
 
     useEffect(() => {
@@ -70,42 +72,51 @@ function CheckoutPageInner() {
         async (submitData: CheckoutFormSubmitData) => {
             setIsProcessing(true);
             try {
-                // Step 1: Create Stripe PaymentIntent and persist ShopOrder
-                createPaymentIntentFetch
-                    .request(submitData.intentRequest)
-                    .onSuccess((intentRes) => {
-                        const { paymentIntentId, orderId } = intentRes;
+                // Step 1: Initialize PayTR Token & persist ShopOrder
+                getPayTRTokenFetch
+                    .request({
+                        ...submitData.paytrRequest,
+                        userEmail: user?.email,
+                        userName: user?.fullName,
+                        userPhone: user?.phoneNo,
+                    })
+                    .onSuccess((res) => {
+                        const { orderId } = res;
 
-                        // Step 2: Confirm Payment with Stripe / backend
-                        confirmPaymentFetch
-                            .request({ paymentIntentId, orderId })
+                        // Step 2: Confirm Order with PayTR
+                        confirmPayTRFetch
+                            .request({ orderId })
                             .onSuccess((confirmRes) => {
                                 setIsProcessing(false);
-                                if (confirmRes.status === "success" || confirmRes.status as string === "SUCCESS") {
+                                if (confirmRes.status === "success") {
                                     dispatch(clearCart());
                                     if (isBuyNow) dispatch(clearBuyNowItem());
-                                    toast.success("Payment authorized successfully! Your order has been placed.");
+                                    toast.success(
+                                        locale === "tr"
+                                            ? "Ödemeniz PayTR ile başarıyla alındı! Siparişiniz oluşturuldu."
+                                            : "Payment authorized successfully via PayTR! Your order has been placed."
+                                    );
                                     router.push(`/orders/${orderId}`);
                                 } else {
-                                    toast.error(confirmRes.reason || "Payment confirmation failed. Please check your card details.");
+                                    toast.error(confirmRes.message || (locale === "tr" ? "Ödeme onayı tamamlanamadı." : "Payment confirmation failed."));
                                 }
                             })
                             .onError((err: string) => {
                                 setIsProcessing(false);
-                                toast.error(err || "Failed to confirm payment with banking gateway.");
+                                toast.error(err || (locale === "tr" ? "PayTR banka ağ geçidine ulaşılamadı." : "Failed to confirm payment with banking gateway."));
                             });
                     })
                     .onError((err: string) => {
                         setIsProcessing(false);
-                        toast.error(err || "Could not initialize checkout session. Please try again.");
+                        toast.error(err || (locale === "tr" ? "PayTR ödeme oturumu başlatılamadı." : "Could not initialize PayTR session. Please try again."));
                     });
             } catch (error) {
                 setIsProcessing(false);
-                toast.error("An unexpected error occurred during checkout.");
-                console.error("Checkout error:", error);
+                toast.error(locale === "tr" ? "Ödeme sırasında beklenmedik bir hata oluştu." : "An unexpected error occurred during checkout.");
+                console.error("PayTR checkout error:", error);
             }
         },
-        [createPaymentIntentFetch, confirmPaymentFetch, dispatch, isBuyNow, router]
+        [getPayTRTokenFetch, confirmPayTRFetch, dispatch, isBuyNow, router, user, locale]
     );
 
     return (
@@ -115,7 +126,7 @@ function CheckoutPageInner() {
                     cartItems={effectiveItems}
                     subtotalAmount={effectiveTotal}
                     shippingMethods={shippingMethodsMap}
-                    loading={isProcessing || createPaymentIntentFetch.isLoading || confirmPaymentFetch.isLoading}
+                    loading={isProcessing || getPayTRTokenFetch.isLoading || confirmPayTRFetch.isLoading}
                     onSubmit={handlePaymentSubmit}
                     currentAddress={user?.address}
                 />
