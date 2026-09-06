@@ -6,8 +6,10 @@ export interface Product {
     categoryId: number;
     shippingMethodId?: number;
     title: string;
+    titleTr?: string;
     code: string;
     description: string;
+    descriptionTr?: string;
     dateAdded: string;
     starred: boolean;
     /** When false, product is hidden from the public shop (admin still sees it). */
@@ -23,6 +25,7 @@ export interface ProductVariant {
     disabled: boolean;
     quantityInStock: number;
     price: number;
+    priceTry?: number;
     // product: Product;
     variationOptions: {
         variationOptionId: number;
@@ -49,11 +52,13 @@ export interface ProductDetails {
     productId: number;
     images: ProductImage[];
     title: string;
+    titleTr?: string;
     code: string;
     categoryId: number;
     shippingMethodId?: number;
     variants: (Omit<ProductVariant, 'variationOptions'> & {variantProperties : {[variationId: number] : {variationOptionId: number , name: string}}})[];
     description: string;
+    descriptionTr?: string;
     attributes: ProductAttribute[];
     starred: boolean;
     status: boolean;
@@ -106,7 +111,9 @@ export interface ProductPreview {
     imageUrl: string;
     images: string[];
     price: number;
+    priceTry?: number;
     title: string;
+    titleTr?: string;
     code: string;
     rating: number;
     starred: boolean;

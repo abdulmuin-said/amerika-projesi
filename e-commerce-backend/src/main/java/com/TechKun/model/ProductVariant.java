@@ -31,6 +31,9 @@ public class ProductVariant {
     @Column(name = "price", nullable = false)
     private Double price;
 
+    @Column(name = "price_try")
+    private Double priceTry;
+
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     @JsonBackReference

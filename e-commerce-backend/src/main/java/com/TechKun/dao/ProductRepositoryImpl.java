@@ -68,7 +68,9 @@ public class ProductRepositoryImpl implements ProductRepositoryExtension {
                 pi.image_url,
                 ai.all_image_urls AS images,
                 pv.price,
+                pv.price_try,
                 p.title,
+                p.title_tr,
                 p.code,
                 COALESCE(pr.rating, 0) AS rating,
                 p.starred,
@@ -106,7 +108,9 @@ public class ProductRepositoryImpl implements ProductRepositoryExtension {
         preview.setShippingMethodId((Integer) result.get("shipping_method_id"));
         preview.setImageUrl((String) result.get("image_url"));
         preview.setPrice((Double) result.get("price"));
+        preview.setPriceTry(result.get("price_try") != null ? ((Number) result.get("price_try")).doubleValue() : null);
         preview.setTitle((String) result.get("title"));
+        preview.setTitleTr((String) result.get("title_tr"));
         preview.setCode((String) result.get("code"));
         preview.setRating((Double) result.get("rating"));
         preview.setStarred((Boolean) result.get("starred"));
@@ -241,7 +245,7 @@ public class ProductRepositoryImpl implements ProductRepositoryExtension {
                         FROM filtered_variants v
                         JOIN product_variant_property pvp ON pvp.product_variant_id = v.product_variant_id
                         JOIN variation_option vo ON vo.variation_option_id = pvp.variation_option_id
-                        GROUP BY v.product_variant_id, v.disabled, v.price, v.quantity_in_stock, v.sku, v.product_id
+                        GROUP BY v.product_variant_id, v.disabled, v.price, v.price_try, v.quantity_in_stock, v.sku, v.product_id
                     ),
                     aggregated_variants AS (
                         SELECT
@@ -250,6 +254,7 @@ public class ProductRepositoryImpl implements ProductRepositoryExtension {
                                 'productVariantId', pvp.product_variant_id,
                                 'sku', pvp.sku,
                                 'price', pvp.price,
+                                'priceTry', pvp.price_try,
                                 'disabled', pvp.disabled,
                                 'quantityInStock', pvp.quantity_in_stock,
                                 'variantProperties', pvp.variant_properties
@@ -300,10 +305,12 @@ public class ProductRepositoryImpl implements ProductRepositoryExtension {
         ProductDetails productDetails = new ProductDetails();
         productDetails.setProductId((Integer) result.get("product_id"));
         productDetails.setTitle((String) result.get("title"));
+        productDetails.setTitleTr((String) result.get("title_tr"));
         productDetails.setCode((String) result.get("code"));
         productDetails.setStarred((Boolean) result.get("starred"));
         productDetails.setStatus((Boolean) result.get("status"));
         productDetails.setDescription((String) result.get("description"));
+        productDetails.setDescriptionTr((String) result.get("description_tr"));
         productDetails.setCategoryId((Integer) result.get("category_id"));
         productDetails.setShippingMethodId((Integer) result.get("shipping_method_id"));
         productDetails.setAverageRating(result.get("avg_rating") != null ? ((Number) result.get("avg_rating")).doubleValue() : 0.0);
@@ -325,6 +332,9 @@ public class ProductRepositoryImpl implements ProductRepositoryExtension {
                         productVariant.setProductVariantId((Integer) v.get("productVariantId"));
                         productVariant.setSku((String) v.get("sku"));
                         productVariant.setPrice(((Number) v.get("price")).doubleValue());
+                        if (v.get("priceTry") != null) {
+                            productVariant.setPriceTry(((Number) v.get("priceTry")).doubleValue());
+                        }
                         productVariant.setQuantityInStock(((Number) v.get("quantityInStock")).intValue());
                         productVariant.setDisabled((Boolean) v.get("disabled"));
                         List<Map<String, Object>> variantProperties = (List<Map<String, Object>>) v

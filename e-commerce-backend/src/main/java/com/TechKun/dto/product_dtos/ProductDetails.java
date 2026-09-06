@@ -12,6 +12,7 @@ public class ProductDetails {
     private Integer productId;
     private List<ProductImage> images;
     private String title;
+    private String titleTr;
     private String code;
     private Boolean starred;
     private Boolean status;
@@ -19,6 +20,7 @@ public class ProductDetails {
     private Integer shippingMethodId;
     private List<ProductVariant> variants;
     private String description;
+    private String descriptionTr;
     private List<ProductAttributeItem> attributes;
     private Double averageRating;
     private Integer reviewCount;
@@ -28,6 +30,7 @@ public class ProductDetails {
         private Integer productVariantId;
         private String sku;
         private double price;
+        private Double priceTry;
         private Boolean disabled;
         private int quantityInStock;
         private Map<Integer, VariantProperty> variantProperties;

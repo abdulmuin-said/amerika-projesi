@@ -19,6 +19,9 @@ public class Category {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "name_tr")
+    private String nameTr;
+
     @Column(name = "code", nullable = false, unique = true)
     private String code;
 

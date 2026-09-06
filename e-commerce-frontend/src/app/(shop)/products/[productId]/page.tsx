@@ -32,6 +32,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { addToWishlistAsync, removeFromWishlistAsync } from "@/store/slices/wishlistSlice";
 import { ProductDetailPaymentTrustBox } from "@/app/components/PaymentBadges";
+import { useLocalization } from "@/lib/useLocalization";
 
 type VariationMap = {
     [variationId: number]: {
@@ -60,10 +61,19 @@ const GENERIC_PRODUCT_DETAILS = [
     { key: "DETAILS",   value: "Make a bold statement with this exquisite painting, designed to enhance the ambiance of any room. Made from the finest materials, it showcases rich, vibrant colors that are both eye-catching and long-lasting. Perfect for home or office use, it brings a touch of elegance to any space, from living rooms to hotel lobbies." },
 ];
 
+const GENERIC_PRODUCT_DETAILS_TR = [
+    { key: "EBAT",      value: "Evinizin dekorasyonu için kanvas tablonun farklı boyut seçeneklerini varyasyonlardan inceleyebilirsiniz." },
+    { key: "MALZEME",   value: "Uzun ömürlü ve dayanıklı masif ahşap şasi üzerine gerilmiş %100 pamuklu kanvas kumaş." },
+    { key: "KULLANIM",  value: "Salon, yatak odası, ofis, otel veya çalışma alanlarınızın duvarlarını modern sanatla taçlandırın." },
+    { key: "BASKI",     value: "Yüksek çözünürlüklü UV korumalı solmayan pigment baskı ile canlı ve parlak renkler." },
+    { key: "DETAY",     value: "Her mekâna lüks ve estetik katmak için özenle üretilmiştir. El işçiliği germe şasi ile duvara asılmaya hazır halde gönderilir." },
+];
+
 export default function ProductDetailsPage({ params }: { params: Promise<{ productId: string }> }) {
     const { productId } = React.use(params);
     const dispatch = useAppDispatch();
     const router = useRouter();
+    const { formatPrice, getLocalizedTitle, getLocalizedDescription, locale, currency } = useLocalization();
 
     const getProductByIdFetch = useDataFetch(productServices.getProductById);
     const getAllProductsFetch = useDataFetch(productServices.getAllProducts);
@@ -594,7 +604,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                     </React.Fragment>
                 ))}
                 <ChevronRight className="h-3.5 w-3.5 shrink-0" />
-                <span className="text-foreground font-medium truncate max-w-[200px]">{product.title}</span>
+                <span className="text-foreground font-medium truncate max-w-[200px]">{getLocalizedTitle(product.title, product.titleTr)}</span>
             </nav>
 
             {/* ── Hero: Etsy-style 3-part layout ── */}
@@ -733,13 +743,13 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                     {/* Zoom lightbox */}
                     <Dialog open={isZoomOpen} onOpenChange={setIsZoomOpen}>
                         <DialogContent className="max-w-4xl w-full p-3 bg-background/98 backdrop-blur">
-                            <DialogTitle className="sr-only">{product.title} — image viewer</DialogTitle>
+                            <DialogTitle className="sr-only">{getLocalizedTitle(product.title, product.titleTr)} — image viewer</DialogTitle>
                             <div className="flex items-center justify-center w-full h-[78vh] bg-muted/20 rounded">
                                 {activeImage && (
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img
                                         src={activeImage.imageUrl}
-                                        alt={product.title}
+                                        alt={getLocalizedTitle(product.title, product.titleTr)}
                                         className="max-w-full max-h-full object-contain"
                                     />
                                 )}
@@ -802,7 +812,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                     {/* Title + wishlist */}
                     <div>
                         <div className="flex items-start gap-3">
-                            <h1 className="font-display text-3xl font-semibold leading-snug flex-1">{product.title}</h1>
+                            <h1 className="font-display text-3xl font-semibold leading-snug flex-1">{getLocalizedTitle(product.title, product.titleTr)}</h1>
                             <button
                                 type="button"
                                 onClick={handleWishlistToggle}
@@ -889,11 +899,11 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                             {selectedVariant && totalPrice !== null ? (
                                 <>
                                     <span className="text-2xl font-semibold text-primary">
-                                        ${(discountedPrice ?? totalPrice).toFixed(2)}
+                                        {formatPrice(discountedPrice ?? totalPrice, (selectedVariant as any)?.priceTry)}
                                     </span>
                                     {productPromo && discountedPrice !== null && discountedPrice !== totalPrice && (
                                         <span className="text-sm text-muted-foreground line-through">
-                                            ${totalPrice.toFixed(2)}
+                                            {formatPrice(totalPrice, (selectedVariant as any)?.priceTry)}
                                         </span>
                                     )}
                                     {productPromo && discountedPrice !== null && discountedPrice !== totalPrice && (
@@ -905,9 +915,11 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                             ) : (
                                 <>
                                     <span className="text-2xl font-semibold text-primary">
-                                        {discountedPriceRange[0] === discountedPriceRange[1]
-                                            ? `$${discountedPriceRange[0].toFixed(2)}`
-                                            : `$${discountedPriceRange[0].toFixed(2)} – $${discountedPriceRange[1].toFixed(2)}`}
+                                        {currency === "TRY" && (product?.variants?.[0] as any)?.priceTry
+                                            ? formatPrice(discountedPriceRange[0], (product?.variants?.[0] as any)?.priceTry)
+                                            : (discountedPriceRange[0] === discountedPriceRange[1]
+                                                ? `$${discountedPriceRange[0].toFixed(2)}`
+                                                : `$${discountedPriceRange[0].toFixed(2)} – $${discountedPriceRange[1].toFixed(2)}`)}
                                     </span>
                                     {productPromo && priceRange[0] !== discountedPriceRange[0] && (
                                         <span className="text-sm text-muted-foreground line-through">
@@ -1027,10 +1039,16 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
 
                     {/* Description */}
                     <div>
-                        <p className="text-base font-semibold text-foreground mb-3">Description</p>
-                        {/* TODO: show product.description from DB here once content is standardised */}
+                        <p className="text-base font-semibold text-foreground mb-3">
+                            {locale === "tr" ? "Ürün Açıklaması & Özellikler" : "Description & Specifications"}
+                        </p>
+                        {((product as any)?.descriptionTr || product?.description) && (
+                            <div className="text-sm leading-relaxed text-muted-foreground mb-4 p-3 bg-muted/40 rounded-lg border border-border/50">
+                                {getLocalizedDescription(product?.description, (product as any)?.descriptionTr)}
+                            </div>
+                        )}
                         <ul className="space-y-2">
-                            {GENERIC_PRODUCT_DETAILS.map((item) => (
+                            {(locale === "tr" ? GENERIC_PRODUCT_DETAILS_TR : GENERIC_PRODUCT_DETAILS).map((item) => (
                                 <li key={item.key} className="flex gap-2 text-sm leading-relaxed">
                                     <span className="shrink-0 mt-[6px] w-1.5 h-1.5 rounded-full bg-primary/50" />
                                     <span className="text-muted-foreground">

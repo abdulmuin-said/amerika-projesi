@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Badge } from "@/components/ui/badge";
 import { addToCart } from "@/store/slices/cartSlice";
 import { addToWishlistAsync, removeFromWishlistAsync } from "@/store/slices/wishlistSlice";
+import { useLocalization } from "@/lib/useLocalization";
 
 function NoImagePlaceholder() {
    return (
@@ -34,6 +35,7 @@ function getDiscountedPrice(price: number, promotion: PromotionDetails | null): 
 
 export default function ProductCard({ product, promo }: { product: ProductPreview; promo: PromotionDetails | null }) {
    const dispatch = useAppDispatch();
+   const { formatPrice, getLocalizedTitle, locale } = useLocalization();
    const wishlistItems = useAppSelector((state) => state.wishlist.items);
    const { authenticated } = useAppSelector((state) => state.auth);
    const wishlistItem = wishlistItems.find(item => item.productVariant.productVariantId === product.productVariantId);
@@ -221,7 +223,7 @@ export default function ProductCard({ product, promo }: { product: ProductPrevie
 
             {/* Title — reserved 2 lines */}
             <h3 className="font-display text-xl font-semibold leading-snug line-clamp-2 text-foreground mb-2" style={{ minHeight: "3.375rem" }}>
-               {product.title}
+               {getLocalizedTitle(product.title, product.titleTr)}
             </h3>
 
             {/* Discount badge — reserved height */}
@@ -235,10 +237,10 @@ export default function ProductCard({ product, promo }: { product: ProductPrevie
 
             {/* Price */}
             <div className="flex items-baseline gap-2">
-               <span className="text-sm text-muted-foreground font-normal">From</span>
-               <span className="text-base font-semibold text-foreground">${discounted.toFixed(2)}</span>
+               <span className="text-sm text-muted-foreground font-normal">{locale === "tr" ? "Başlangıç" : "From"}</span>
+               <span className="text-base font-semibold text-foreground">{formatPrice(discounted, product.priceTry)}</span>
                {isDiscounted && (
-                  <span className="text-xs text-muted-foreground line-through">${product.price.toFixed(2)}</span>
+                  <span className="text-xs text-muted-foreground line-through">{formatPrice(product.price, product.priceTry)}</span>
                )}
             </div>
 

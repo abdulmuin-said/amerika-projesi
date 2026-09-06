@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 import Link from "next/link";
 import { useState } from "react";
@@ -45,14 +44,14 @@ export default function Footer() {
                     <div>
                         <Link href="/" className="inline-flex flex-col items-start leading-none group mb-4 select-none">
                             <span className="font-display text-3xl md:text-4xl font-semibold tracking-[0.14em] text-white group-hover:text-[#e4cf8d] transition-colors uppercase">
-                                NovaCanvas
+                                NovaLux
                             </span>
                             <span className="text-[11px] md:text-xs font-sans font-medium tracking-[0.45em] text-[#c9a84c] uppercase pl-1 mt-1">
                                 Studios
                             </span>
                         </Link>
                         <p className="text-white/45 text-sm leading-relaxed max-w-sm">
-                            Museum-grade panoramic wall art curated for modern architectural and residential spaces. Each piece is hand-stretched on heirloom pine chassis with archival pigment inks.
+                            Museum-grade wall art, tempered glass prints, and designer mirrors curated for modern luxury residential and architectural spaces.
                         </p>
                         <div className="mt-8">
                             <p className="text-[10px] tracking-[0.2em] uppercase text-[#c9a84c]/80 mb-2.5 flex items-center gap-1.5 font-medium">
@@ -132,7 +131,7 @@ export default function Footer() {
                 {/* ── Bottom bar ── */}
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8">
                     <p className="text-white/30 text-xs tracking-wide">
-                        © {new Date().getFullYear()} NovaCanvas Studios. All rights reserved.
+                        © {new Date().getFullYear()} NovaLux Studios. All rights reserved.
                     </p>
                     <div className="flex items-center gap-5">
                         {socialLinks.map(({ icon: Icon, label, href }) => (

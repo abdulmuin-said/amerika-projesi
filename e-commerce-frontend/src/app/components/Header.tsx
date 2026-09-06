@@ -14,6 +14,7 @@ import { useAppSelector } from "@/store/hooks";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { CategoryTree } from "@/types/domains/category";
+import LanguageCurrencyToggle from "./LanguageCurrencyToggle";
 
 // Dark espresso top nav — same warm near-black as brand primary
 const NAV_BG = "bg-[oklch(0.42_0.02_55)]";
@@ -147,7 +148,7 @@ export default function Header() {
                                         <SheetClose asChild>
                                             <Link href="/" className="flex flex-col items-start leading-none select-none">
                                                 <span className="font-display text-xl font-semibold tracking-[0.14em] text-foreground uppercase">
-                                                    NovaCanvas
+                                                    NovaLux
                                                 </span>
                                                 <span className="text-[8.5px] font-sans font-medium tracking-[0.42em] text-[#c9a84c] uppercase pl-1 mt-0.5">
                                                     Studios
@@ -219,15 +220,16 @@ export default function Header() {
                     {/* Center: logo absolutely centered */}
                     <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center leading-none text-center whitespace-nowrap select-none group">
                         <span className="font-display text-[19px] font-semibold tracking-[0.14em] text-white uppercase">
-                            NovaCanvas
+                            NovaLux
                         </span>
                         <span className="text-[8px] font-sans font-medium tracking-[0.45em] text-[#c9a84c] uppercase pl-1 mt-0.5">
                             Studios
                         </span>
                     </Link>
 
-                    {/* Right: account + cart */}
-                    <div className="ml-auto flex items-center gap-0.5">
+                    {/* Right: language + account + cart */}
+                    <div className="ml-auto flex items-center gap-1">
+                        <LanguageCurrencyToggle />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" aria-label="User menu" className="hover:bg-white/10">
@@ -261,7 +263,7 @@ export default function Header() {
                     {/* Logo — left, white on dark with stacked luxury subline */}
                     <Link href="/" className="flex flex-col items-start leading-none group shrink-0 select-none">
                         <span className="font-display text-[26px] md:text-[28px] font-semibold tracking-[0.14em] text-white group-hover:text-[#e4cf8d] transition-colors uppercase">
-                            NovaCanvas
+                            NovaLux
                         </span>
                         <span className="text-[9.5px] font-sans font-medium tracking-[0.45em] text-[#c9a84c] uppercase pl-1 mt-0.5">
                             Studios
@@ -281,7 +283,8 @@ export default function Header() {
                     </div>
 
                     {/* Icons — right, white on dark */}
-                    <div className="flex items-center gap-0.5">
+                    <div className="flex items-center gap-2">
+                        <LanguageCurrencyToggle />
                         {mounted && !authenticated && (
                             <Link
                                 href="/auth/login"

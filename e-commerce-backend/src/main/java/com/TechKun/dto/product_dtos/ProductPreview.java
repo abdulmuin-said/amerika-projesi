@@ -16,7 +16,9 @@ public class ProductPreview {
     private String imageUrl;
     private List<String> images;
     private double price;
+    private Double priceTry;
     private String title;
+    private String titleTr;
     private String code;
     private double rating;
     private boolean starred;

@@ -31,8 +31,14 @@ public class Product {
     @Column(name = "title", nullable = false)
     private String title;
 
+    @Column(name = "title_tr")
+    private String titleTr;
+
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "description_tr", columnDefinition = "TEXT")
+    private String descriptionTr;
 
     @Column(name = "date_added", nullable = false)
     private LocalDateTime dateAdded;

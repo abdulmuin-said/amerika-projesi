@@ -7,6 +7,7 @@ import variationsReducer from './slices/variationSlice';
 import attributesReducer from './slices/attributeSlice';
 import wishlistReducer from './slices/wishlistSlice';
 import buyNowReducer from './slices/buyNowSlice';
+import localeReducer from './slices/localeSlice';
 
 export const store = configureStore({
     reducer: {
@@ -17,7 +18,8 @@ export const store = configureStore({
         variations: variationsReducer,
         attributes: attributesReducer,
         wishlist: wishlistReducer,
-        buyNow: buyNowReducer
+        buyNow: buyNowReducer,
+        locale: localeReducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
