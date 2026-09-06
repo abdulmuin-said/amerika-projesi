@@ -120,6 +120,17 @@ def run_migration():
     cur_tgt = conn_tgt.cursor()
 
     try:
+        print("\n[0/5] Ensuring target DB schema & indexes...")
+        cur_tgt.execute("""
+            ALTER TABLE product ADD COLUMN IF NOT EXISTS title_tr VARCHAR(255);
+            ALTER TABLE product ADD COLUMN IF NOT EXISTS description_tr TEXT;
+            ALTER TABLE product_variant ADD COLUMN IF NOT EXISTS price_try NUMERIC(12, 2);
+            ALTER TABLE category ADD COLUMN IF NOT EXISTS name_tr VARCHAR(255);
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_product_image_unique ON product_image (product_id, image_url);
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_review_prod_text ON review (product_id, md5(review_text));
+        """)
+        conn_tgt.commit()
+
         print("\n[1/5] Setting up 3-Pillar Category Architecture...")
         pillars = [
             (100, "Wall Art", "Duvar Sanatı & Kanvas", "WALL-ART", None, "https://www.canvasia.com.tr/img/products/kanvas-panoramik/cvs-pan-001/cercevesizfon01.webp"),
@@ -368,6 +379,16 @@ def run_migration():
             print(f"Processed {min(i + batch_size, total_prods)} / {total_prods} products... ({migrated_variants} variants)")
 
         print("\n[5/5] Migrating Approved Customer Reviews...")
+        cur_tgt.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_review_prod_text ON review (product_id, md5(review_text));
+        """)
+        conn_tgt.commit()
+
+        # Find a valid shop_user ID for legacy reviews attribution
+        cur_tgt.execute("SELECT user_id FROM shop_user ORDER BY user_id LIMIT 1;")
+        user_row = cur_tgt.fetchone()
+        default_user_id = user_row[0] if user_row else 1
+
         cur_src.execute("""
             SELECT "Id", "UrunId", "AdSoyad", "YorumMetni", "Puan", "OlusturulmaTarihi"
             FROM "Yorumlar"
@@ -386,9 +407,9 @@ def run_migration():
                 sub_date = r['OlusturulmaTarihi']
                 cur_tgt.execute("""
                     INSERT INTO review (product_id, rating, review_text, date_of_submission, user_id)
-                    VALUES (%s, %s, %s, %s, 2)
+                    VALUES (%s, %s, %s, %s, %s)
                     ON CONFLICT (product_id, md5(review_text)) DO NOTHING;
-                """, (tgt_pid, rating, text, sub_date))
+                """, (tgt_pid, rating, text, sub_date, default_user_id))
                 migrated_reviews += 1
 
         conn_tgt.commit()
