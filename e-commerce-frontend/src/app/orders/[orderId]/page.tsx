@@ -9,10 +9,12 @@ import OrderDetailView from "../components/OrderDetails";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useLocalization } from "@/lib/useLocalization";
 
 const OrderDetailsPage = ({ params }: { params: Promise<{ orderId: string }> }) => {
     const { orderId } = use(params);
     const router = useRouter();
+    const { locale } = useLocalization();
     const getOrderFetch = useDataFetch(orderServices.getOrderById);
     const [order, setOrder] = useState<OrderDetails | null>(null);
 
@@ -30,7 +32,9 @@ const OrderDetailsPage = ({ params }: { params: Promise<{ orderId: string }> }) 
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4" />
-                    <p className="text-gray-500">Loading order details...</p>
+                    <p className="text-gray-500">
+                        {locale === 'tr' ? 'Sipariş detayları yükleniyor...' : 'Loading order details...'}
+                    </p>
                 </div>
             </div>
         );
@@ -40,9 +44,15 @@ const OrderDetailsPage = ({ params }: { params: Promise<{ orderId: string }> }) 
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
-                    <h2 className="text-2xl font-bold mb-2">Order Not Found</h2>
-                    <p className="text-gray-500 mb-6">We could not find order #{orderId}.</p>
-                    <Button onClick={() => router.push("/orders")}>Back to Orders</Button>
+                    <h2 className="text-2xl font-bold mb-2">
+                        {locale === 'tr' ? 'Sipariş Bulunamadı' : 'Order Not Found'}
+                    </h2>
+                    <p className="text-gray-500 mb-6">
+                        {locale === 'tr' ? `#${orderId} numaralı sipariş bulunamadı.` : `We could not find order #${orderId}.`}
+                    </p>
+                    <Button onClick={() => router.push("/orders")}>
+                        {locale === 'tr' ? 'Siparişlerime Dön' : 'Back to Orders'}
+                    </Button>
                 </div>
             </div>
         );

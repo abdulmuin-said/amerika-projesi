@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
 import * as bannerImagesService from "@/services/bannerImages";
+import { useLocalization } from "@/lib/useLocalization";
 
 const HERO_LEFT =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuC84UWnQ9TTXJj0iVO0xX63Kip-_UqcfyVRnailflVn50Zd-y8rNYm99ytqKWFLoNqmQsWl70fP-12Tb58JLkxmEguQS4JHHBQ6I-1R_5UQCRh7FOFNb2z7TwRl2XFMrVtQjZFZULWEgp4ZSnlPjk0Er64RJPFw5gFLUn8E34F9qxJpKAWXAIM-0gp1jXwaCgc_hATupWxBC6qnX-Pcf35zkeT2--Gk6a6UUR9VSO3RNefu093I1Wr8lXtPNahh0iNtAPf0DGNUglU";
@@ -13,6 +14,7 @@ const HERO_RIGHT =
 
 const Banner = () => {
   const [defaultUrl, setDefaultUrl] = useState<string | null>(null);
+  const { t } = useLocalization();
 
   useEffect(() => {
     let mounted = true;
@@ -37,7 +39,7 @@ const Banner = () => {
         <div className="relative flex-1 sm:h-full sm:w-1/2 overflow-hidden shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            alt="Minimalist decor and sculpture in soft light"
+            alt="Minimalist luxury wall art in soft architectural light"
             src={leftUrl}
             className="w-full h-full object-cover"
           />
@@ -45,7 +47,7 @@ const Banner = () => {
         <div className="relative flex-1 sm:w-1/2 overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            alt="Luxury living space with neutral tones"
+            alt="Luxury modern interior with panoramic fine canvas"
             src={rightUrl}
             className="w-full h-full object-cover"
           />
@@ -55,25 +57,25 @@ const Banner = () => {
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-[1536px] mx-auto px-5 sm:px-8 md:px-12 pt-7 pb-10 sm:py-10 md:py-14">
-        <div className="bg-white/45 backdrop-blur-md p-6 sm:p-8 md:p-10 lg:p-12 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg shadow-[0_12px_40px_rgba(78,70,57,0.10)]">
+        <div className="bg-white/60 backdrop-blur-md p-6 sm:p-8 md:p-10 lg:p-12 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg shadow-[0_12px_40px_rgba(78,70,57,0.12)] border border-white/40">
 
-          <span className="block mb-3 text-[11px] font-semibold tracking-[0.25em] uppercase text-[oklch(0.16_0.02_55)]">
-            New Arrivals / Autumn 24
+          <span className="block mb-3 text-[11px] font-semibold tracking-[0.25em] uppercase text-[#c9a84c]">
+            {t("home.hero.seasonBadge")}
           </span>
 
-          <h1 className="font-display text-[2rem] sm:text-4xl md:text-5xl lg:text-6xl tracking-tight text-stone-900 leading-[1.08] mb-4 sm:mb-5">
-            The NovaCanvas<br />Signature
+          <h1 className="font-display text-[2rem] sm:text-4xl md:text-5xl lg:text-6xl tracking-tight text-stone-900 leading-[1.08] mb-4 sm:mb-5 font-bold">
+            {t("home.hero.title")}
           </h1>
 
-          <p className="text-sm sm:text-base text-stone-600 leading-relaxed mb-6 sm:mb-7">
-            Museum-grade panoramic wall art, crafted on 380gsm archival cotton canvas and hand-stretched over heirloom solid pine chassis.
+          <p className="text-sm sm:text-base text-stone-700 leading-relaxed mb-6 sm:mb-7">
+            {t("home.hero.subtitle")}
           </p>
 
           <Button
             asChild
-            className="rounded-none bg-[oklch(0.16_0.02_55)] text-white hover:bg-[oklch(0.24_0.02_55)] px-7 sm:px-9 py-4 h-auto text-[11px] tracking-[0.2em] uppercase font-semibold"
+            className="rounded-none bg-[oklch(0.16_0.02_55)] text-white hover:bg-[#c9a84c] hover:text-stone-950 px-7 sm:px-9 py-4 h-auto text-[11px] tracking-[0.2em] uppercase font-semibold transition-colors duration-300 shadow-md"
           >
-            <Link href="/products">Explore Now</Link>
+            <Link href="/products">{t("home.hero.cta")}</Link>
           </Button>
 
         </div>

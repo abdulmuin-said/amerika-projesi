@@ -42,6 +42,7 @@ type VariationMap = {
             [variationOptionId: number]: {
                 name: string;
                 priceRange: [number, number];
+                priceTryRange?: [number, number];
             }
         };
     }
@@ -49,6 +50,7 @@ type VariationMap = {
 
 type VariantSelectionState = {
     priceRange: [number, number];
+    priceTryRange?: [number, number];
     variationMap: VariationMap;
 };
 
@@ -73,7 +75,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
     const { productId } = React.use(params);
     const dispatch = useAppDispatch();
     const router = useRouter();
-    const { formatPrice, getLocalizedTitle, getLocalizedDescription, locale, currency } = useLocalization();
+    const { formatPrice, getLocalizedTitle, getLocalizedDescription, locale, currency, t } = useLocalization();
 
     const getProductByIdFetch = useDataFetch(productServices.getProductById);
     const getAllProductsFetch = useDataFetch(productServices.getAllProducts);
@@ -95,16 +97,21 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
     const swipeTouchStartX = useRef<number | null>(null);
     const swipeTouchStartY = useRef<number | null>(null);
 
-    const [{ priceRange, variationMap }, setVariantSelectionState] = useState<VariantSelectionState>({
+    const [{ priceRange, priceTryRange, variationMap }, setVariantSelectionState] = useState<VariantSelectionState>({
         priceRange: [0, 0],
+        priceTryRange: [0, 0],
         variationMap: {},
     });
 
     const initializeVariantSelectionState = useCallback((): VariantSelectionState => {
         const initialPriceRange: [number, number] = [Infinity, -Infinity];
+        const initialPriceTryRange: [number, number] = [Infinity, -Infinity];
         const initialVariationMap = (product?.variants || []).filter(v => !v.disabled).reduce((acc, cur) => {
             initialPriceRange[0] = Math.min(initialPriceRange[0], cur.price);
             initialPriceRange[1] = Math.max(initialPriceRange[1], cur.price);
+            const tryPrice = (cur as any).priceTry ?? cur.price * 36;
+            initialPriceTryRange[0] = Math.min(initialPriceTryRange[0], tryPrice);
+            initialPriceTryRange[1] = Math.max(initialPriceTryRange[1], tryPrice);
 
             cur.variationOptions.forEach(opt => {
                 const variationName = variations[opt.variationId]?.name || `Variation ${opt.variationId}`;
@@ -115,17 +122,25 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                 const variationOption = variation.options[opt.variationOptionId] = variation.options[opt.variationOptionId] ?? {
                     name: opt.name,
                     priceRange: [cur.price, cur.price],
+                    priceTryRange: [tryPrice, tryPrice],
                 };
                 variationOption.priceRange = [
                     Math.min(variationOption.priceRange[0], cur.price),
                     Math.max(variationOption.priceRange[1], cur.price)
                 ];
+                if (variationOption.priceTryRange) {
+                    variationOption.priceTryRange = [
+                        Math.min(variationOption.priceTryRange[0], tryPrice),
+                        Math.max(variationOption.priceTryRange[1], tryPrice)
+                    ];
+                }
             });
             return acc;
         }, {} as VariationMap);
 
         return {
             priceRange: initialPriceRange,
+            priceTryRange: initialPriceTryRange,
             variationMap: initialVariationMap,
         };
     }, [product, variations]);
@@ -135,6 +150,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
         setVariantSelectionState(prev => {
             const { variationMap: currentVarMap } = prev;
             const newPriceRange: [number, number] = [Infinity, -Infinity];
+            const newPriceTryRange: [number, number] = [Infinity, -Infinity];
             currentVarMap[variationId].selectedOptionId = optionId;
             const optionsIncluded: { [varOptId: number]: boolean } = {};
             for (const v of Object.values(currentVarMap)) {
@@ -166,9 +182,12 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                         i--;
                     }
 
+                    const tryPrice = (currentVariant as any).priceTry ?? currentVariant.price * 36;
                     if (acc) {
                         newPriceRange[0] = Math.min(newPriceRange[0], currentVariant.price);
                         newPriceRange[1] = Math.max(newPriceRange[1], currentVariant.price);
+                        newPriceTryRange[0] = Math.min(newPriceTryRange[0], tryPrice);
+                        newPriceTryRange[1] = Math.max(newPriceTryRange[1], tryPrice);
                     }
 
                     currentVariant.variationOptions
@@ -191,10 +210,21 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                                     variationOption.priceRange[1],
                                     currentVariant.price
                                 );
+                                if (variationOption.priceTryRange) {
+                                    variationOption.priceTryRange[0] = Math.min(
+                                        variationOption.priceTryRange[0],
+                                        tryPrice
+                                    );
+                                    variationOption.priceTryRange[1] = Math.max(
+                                        variationOption.priceTryRange[1],
+                                        tryPrice
+                                    );
+                                }
                             } else {
                                 variation.options[opt.variationOptionId] = {
                                     name: opt.name,
-                                    priceRange: [currentVariant.price, currentVariant.price]
+                                    priceRange: [currentVariant.price, currentVariant.price],
+                                    priceTryRange: [tryPrice, tryPrice],
                                 };
                             }
                         });
@@ -204,6 +234,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
 
             return {
                 priceRange: newPriceRange,
+                priceTryRange: newPriceTryRange,
                 variationMap: newVariationMap,
             };
         });
@@ -360,6 +391,15 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
         ] as [number, number];
     }, [priceRange, productPromo, calculateDiscountedPrice]);
 
+    const discountedPriceTryRange = useMemo(() => {
+        const ptr = priceTryRange ?? [0, 0];
+        if (!productPromo) return ptr;
+        return [
+            calculateDiscountedPrice(ptr[0], productPromo),
+            calculateDiscountedPrice(ptr[1], productPromo)
+        ] as [number, number];
+    }, [priceTryRange, productPromo, calculateDiscountedPrice]);
+
     const getSelectedVariant = useCallback(() => selectedVariant, [selectedVariant]);
 
     const relatedProducts = useMemo(() => getAllProductsFetch.data ?? [], [getAllProductsFetch.data]);
@@ -437,12 +477,12 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
     // Stock status helper
     const stockStatus = useMemo(() => {
         const qty = selectedVariant?.quantityInStock ?? enabledVariants.reduce((sum, v) => sum + v.quantityInStock, 0);
-        if (qty === 0) return { label: "Out of Stock", color: "text-destructive" };
-        if (qty <= 5) return { label: `Only ${qty} left!`, color: "text-amber-500" };
-        return { label: "In Stock", color: "text-green-600" };
-    }, [selectedVariant, enabledVariants]);
+        if (qty === 0) return { label: t("product.outOfStock"), color: "text-destructive", isOutOfStock: true };
+        if (qty <= 5) return { label: t("product.lowStock", { count: qty }), color: "text-amber-500", isOutOfStock: false };
+        return { label: t("product.inStock"), color: "text-green-600", isOutOfStock: false };
+    }, [selectedVariant, enabledVariants, t]);
 
-    const isOutOfStock = stockStatus.label === "Out of Stock";
+    const isOutOfStock = stockStatus.isOutOfStock;
     const maxQty = selectedVariant?.quantityInStock ?? 99;
 
     // Computed product spec rows for the details table
@@ -462,12 +502,29 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
             const nums = sizeVal.match(/\d+(\.\d+)?/g)?.map(Number);
             if (nums && nums.length >= 2) {
                 const [w, h] = nums;
-                orientationVal = w === h ? 'Square' : w > h ? 'Landscape' : 'Portrait';
+                orientationVal = w === h 
+                    ? (locale === "tr" ? "Kare" : "Square")
+                    : w > h 
+                        ? (locale === "tr" ? "Yatay" : "Landscape")
+                        : (locale === "tr" ? "Dikey" : "Portrait");
             }
         }
 
         // Material: most specific category (last in breadcrumb path)
         const material = categoryPath.length > 0 ? categoryPath[categoryPath.length - 1].name : '—';
+
+        if (locale === "tr") {
+            return [
+                { label: 'Ebat / Boyut',       value: sizeVal ?? '—' },
+                { label: 'Malzeme & Kanvas',   value: material },
+                { label: 'Ürün Boyutları',     value: sizeVal ?? '—' },
+                { label: 'Parça Sayısı',       value: '1' },
+                { label: 'Oryantasyon',        value: orientationVal },
+                { label: 'Şekil',              value: 'Dikdörtgen' },
+                { label: 'Çerçeve Tipi',       value: 'Ahşap Şasi / Yüzen Çerçeve' },
+                { label: 'Sanat Formu',        value: 'Müze Kalitesinde Kanvas Baskı' },
+            ];
+        }
 
         return [
             { label: 'Size',               value: sizeVal ?? '—' },
@@ -476,11 +533,10 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
             { label: 'Number of Items',    value: '1' },
             { label: 'Orientation',        value: orientationVal },
             { label: 'Shape',              value: 'Rectangle' },
-            { label: 'Theme',              value: '—' },
-            { label: 'Frame Type',         value: 'Framed / Unframed' },
-            { label: 'Wall Art Form',      value: 'Art Print' },
+            { label: 'Frame Type',         value: 'Solid Pine Frame / Floating' },
+            { label: 'Wall Art Form',      value: 'Fine Art Archival Print' },
         ];
-    }, [variationMap, categoryPath]);
+    }, [variationMap, categoryPath, locale]);
 
     // TODO: dynamic per-product description parsing — wire up when needed
     // const descItems = useMemo(() => {
@@ -578,7 +634,15 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
         : true;
 
     const normalizeVariationName = (name: string): string => {
-        if (/^\d+[:/]\d+/.test(name.trim()) || /frame\s*rate/i.test(name)) return 'Size';
+        if (/^\d+[:/]\d+/.test(name.trim()) || /frame\s*rate/i.test(name) || /size/i.test(name)) {
+            return locale === "tr" ? "Boyut / Ebat" : "Size";
+        }
+        if (/frame/i.test(name)) {
+            return locale === "tr" ? "Çerçeve Seçeneği" : "Frame Finish";
+        }
+        if (/material/i.test(name)) {
+            return locale === "tr" ? "Malzeme / Yüzey" : "Material";
+        }
         return name.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
     };
 
@@ -590,7 +654,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
             <nav className="flex items-center gap-1.5 text-sm text-muted-foreground py-4 flex-wrap">
                 <Link href="/" className="flex items-center gap-1 hover:text-foreground transition-colors">
                     <Home className="h-3.5 w-3.5" />
-                    <span>Home</span>
+                    <span>{t("catalog.breadcrumbHome")}</span>
                 </Link>
                 {categoryPath.map((crumb) => (
                     <React.Fragment key={crumb.id}>
@@ -849,25 +913,29 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                                     <div key={key}>
                                         <label className={`text-sm font-medium block mb-1.5 ${hasError ? "text-destructive" : ""}`}>
                                             {normalizeVariationName(value.variationName)}
-                                            {hasError && <span className="ml-1.5 font-normal">— required</span>}
+                                            {hasError && <span className="ml-1.5 font-normal"> {t("product.requiredVariation")}</span>}
                                         </label>
                                         <Select
                                             value={value.selectedOptionId?.toString() ?? ""}
                                             onValueChange={(val) => onSelectVariation(Number(key), Number(val))}
                                         >
                                             <SelectTrigger className={`w-full rounded-sm ${hasError ? "border-destructive ring-1 ring-destructive" : ""}`}>
-                                                <SelectValue placeholder={`Select ${normalizeVariationName(value.variationName)}`} />
+                                                <SelectValue placeholder={t("product.selectVariation", { name: normalizeVariationName(value.variationName) })} />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {Object.entries(value.options)
                                                     .sort(([, a], [, b]) => a.priceRange[0] - b.priceRange[0])
                                                     .map(([optKey, optValue]) => {
-                                                        const [lo, hi] = optValue.priceRange;
+                                                        const [lo, hi] = currency === "TRY" && optValue.priceTryRange && optValue.priceTryRange[0] !== Infinity
+                                                            ? optValue.priceTryRange
+                                                            : optValue.priceRange;
                                                         const discLo = calculateDiscountedPrice(lo, productPromo);
                                                         const discHi = calculateDiscountedPrice(hi, productPromo);
                                                         const priceLabel = lo === hi
-                                                            ? `$${discLo.toFixed(2)}`
-                                                            : `$${discLo.toFixed(2)} – $${discHi.toFixed(2)}`;
+                                                            ? (currency === "TRY" ? `₺${Math.round(discLo).toLocaleString()}` : `$${discLo.toFixed(2)}`)
+                                                            : (currency === "TRY"
+                                                                ? `₺${Math.round(discLo).toLocaleString()} – ₺${Math.round(discHi).toLocaleString()}`
+                                                                : `$${discLo.toFixed(2)} – $${discHi.toFixed(2)}`);
                                                         return (
                                                             <SelectItem key={optKey} value={optKey}>
                                                                 {optValue.name}
@@ -881,7 +949,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                                 );
                             })}
                             {!allVariationsSelected && (
-                                <p className="text-xs text-muted-foreground">Select all options to see exact price and availability.</p>
+                                <p className="text-xs text-muted-foreground">{t("product.selectOptionsHint")}</p>
                             )}
                         </div>
                     )}
@@ -908,24 +976,36 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                                     )}
                                     {productPromo && discountedPrice !== null && discountedPrice !== totalPrice && (
                                         <span className="text-xs text-amber-700 font-medium">
-                                            Save ${(totalPrice - discountedPrice).toFixed(2)}
+                                            {currency === "TRY"
+                                                ? t("product.save", {
+                                                    amount: `₺${Math.round(((selectedVariant as any)?.priceTry ?? totalPrice * 36) * ((totalPrice - discountedPrice) / totalPrice)).toLocaleString()}`
+                                                })
+                                                : t("product.save", {
+                                                    amount: `$${(totalPrice - discountedPrice).toFixed(2)}`
+                                                })}
                                         </span>
                                     )}
                                 </>
                             ) : (
                                 <>
                                     <span className="text-2xl font-semibold text-primary">
-                                        {currency === "TRY" && (product?.variants?.[0] as any)?.priceTry
-                                            ? formatPrice(discountedPriceRange[0], (product?.variants?.[0] as any)?.priceTry)
+                                        {currency === "TRY" && priceTryRange && priceTryRange[0] !== Infinity
+                                            ? (discountedPriceTryRange[0] === discountedPriceTryRange[1]
+                                                ? `₺${Math.round(discountedPriceTryRange[0]).toLocaleString()}`
+                                                : `₺${Math.round(discountedPriceTryRange[0]).toLocaleString()} – ₺${Math.round(discountedPriceTryRange[1]).toLocaleString()}`)
                                             : (discountedPriceRange[0] === discountedPriceRange[1]
                                                 ? `$${discountedPriceRange[0].toFixed(2)}`
                                                 : `$${discountedPriceRange[0].toFixed(2)} – $${discountedPriceRange[1].toFixed(2)}`)}
                                     </span>
                                     {productPromo && priceRange[0] !== discountedPriceRange[0] && (
                                         <span className="text-sm text-muted-foreground line-through">
-                                            {priceRange[0] === priceRange[1]
-                                                ? `$${priceRange[0].toFixed(2)}`
-                                                : `$${priceRange[0].toFixed(2)} – $${priceRange[1].toFixed(2)}`}
+                                            {currency === "TRY" && priceTryRange && priceTryRange[0] !== Infinity
+                                                ? (priceTryRange[0] === priceTryRange[1]
+                                                    ? `₺${Math.round(priceTryRange[0]).toLocaleString()}`
+                                                    : `₺${Math.round(priceTryRange[0]).toLocaleString()} – ₺${Math.round(priceTryRange[1]).toLocaleString()}`)
+                                                : (priceRange[0] === priceRange[1]
+                                                    ? `$${priceRange[0].toFixed(2)}`
+                                                    : `$${priceRange[0].toFixed(2)} – $${priceRange[1].toFixed(2)}`)}
                                         </span>
                                     )}
                                 </>
@@ -938,7 +1018,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                     {/* Quantity selector */}
                     {!isOutOfStock && (
                         <div className="flex items-center gap-3">
-                            <span className="text-sm font-medium">Qty</span>
+                            <span className="text-sm font-medium">{t("product.qty")}</span>
                             <div className="flex items-center border rounded-lg overflow-hidden">
                                 <button
                                     type="button"
@@ -974,8 +1054,8 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                             disabled={isOutOfStock || isAddingToCart || isBuyingNow}
                         >
                             {isAddingToCart ? (
-                                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Adding to Cart...</>
-                            ) : isOutOfStock ? "OUT OF STOCK" : "ADD TO CART"}
+                                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("product.addingToCart")}</>
+                            ) : isOutOfStock ? t("product.outOfStock").toUpperCase() : t("product.addToCart").toUpperCase()}
                         </Button>
                         <Button
                             variant="outline"
@@ -984,8 +1064,8 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                             disabled={isOutOfStock || isBuyingNow || isAddingToCart}
                         >
                             {isBuyingNow ? (
-                                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processing...</>
-                            ) : "BUY NOW"}
+                                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("product.processing")}</>
+                            ) : t("product.buyNow").toUpperCase()}
                         </Button>
                     </div>
 
@@ -1016,7 +1096,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
 
                     {/* Product details — below action buttons */}
                     <div>
-                        <p className="text-base font-semibold text-foreground mb-3">Product Details</p>
+                        <p className="text-base font-semibold text-foreground mb-3">{t("product.specifications")}</p>
                         <dl className="divide-y divide-border border rounded-sm overflow-hidden text-sm">
                             {(attrsExpanded ? productSpecRows : productSpecRows.slice(0, 7)).map((row) => (
                                 <div key={row.label} className="flex px-3 py-2">
@@ -1031,7 +1111,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                                 onClick={() => setAttrsExpanded(d => !d)}
                                 className="mt-2 flex items-center gap-1 text-xs font-medium text-foreground hover:text-primary transition-colors"
                             >
-                                {attrsExpanded ? "See less" : `See all ${productSpecRows.length} details`}
+                                {attrsExpanded ? (locale === "tr" ? "Daha az göster" : "See less") : (locale === "tr" ? `Tüm ${productSpecRows.length} detayı gör` : `See all ${productSpecRows.length} details`)}
                                 <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${attrsExpanded ? "rotate-180" : ""}`} />
                             </button>
                         )}
@@ -1040,7 +1120,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                     {/* Description */}
                     <div>
                         <p className="text-base font-semibold text-foreground mb-3">
-                            {locale === "tr" ? "Ürün Açıklaması & Özellikler" : "Description & Specifications"}
+                            {t("product.description")}
                         </p>
                         {((product as any)?.descriptionTr || product?.description) && (
                             <div className="text-sm leading-relaxed text-muted-foreground mb-4 p-3 bg-muted/40 rounded-lg border border-border/50">
@@ -1079,7 +1159,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
 
             {/* ── Related Products ── */}
             <div className="pb-24 md:pb-8">
-                <h2 className="font-display text-2xl md:text-3xl text-center font-semibold mb-6 tracking-wide">Related Products</h2>
+                <h2 className="font-display text-2xl md:text-3xl text-center font-semibold mb-6 tracking-wide">{t("product.relatedProducts")}</h2>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
                     {getAllProductsFetch.isLoading ? (
                         Array.from({ length: 4 }).map((_, i) => (
@@ -1087,7 +1167,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                         ))
                     ) : relatedProducts.length === 0 ? (
                         <div className="col-span-full text-center py-12">
-                            <p className="text-muted-foreground">No related products found</p>
+                            <p className="text-muted-foreground">{t("product.noRelatedProducts")}</p>
                         </div>
                     ) : (
                         relatedProducts.map((relatedProduct) => {
@@ -1114,21 +1194,29 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                         {productPromo.promotionType === "PERCENTAGE" ? `${productPromo.discountValue}% OFF` : `$${productPromo.discountValue} OFF`}
                     </span>
                 )}
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wide leading-tight">Price</span>
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wide leading-tight">{t("product.price")}</span>
                 <span className="text-base font-semibold text-primary leading-tight">
                     {selectedVariant && totalPrice !== null
-                        ? `$${(discountedPrice ?? totalPrice).toFixed(2)}`
-                        : discountedPriceRange[0] === discountedPriceRange[1]
-                            ? `$${discountedPriceRange[0].toFixed(2)}`
-                            : `$${discountedPriceRange[0].toFixed(2)}+`}
+                        ? formatPrice(discountedPrice ?? totalPrice, (selectedVariant as any)?.priceTry)
+                        : currency === "TRY" && priceTryRange && priceTryRange[0] !== Infinity
+                            ? (discountedPriceTryRange[0] === discountedPriceTryRange[1]
+                                ? `₺${Math.round(discountedPriceTryRange[0]).toLocaleString()}`
+                                : `₺${Math.round(discountedPriceTryRange[0]).toLocaleString()}+`)
+                            : (discountedPriceRange[0] === discountedPriceRange[1]
+                                ? `$${discountedPriceRange[0].toFixed(2)}`
+                                : `$${discountedPriceRange[0].toFixed(2)}+`)}
                 </span>
                 {productPromo && (
                     <span className="text-[11px] text-muted-foreground line-through leading-tight">
                         {selectedVariant && totalPrice !== null
-                            ? `$${totalPrice.toFixed(2)}`
-                            : priceRange[0] === priceRange[1]
-                                ? `$${priceRange[0].toFixed(2)}`
-                                : `$${priceRange[0].toFixed(2)}+`}
+                            ? formatPrice(totalPrice, (selectedVariant as any)?.priceTry)
+                            : currency === "TRY" && priceTryRange && priceTryRange[0] !== Infinity
+                                ? (priceTryRange[0] === priceTryRange[1]
+                                    ? `₺${Math.round(priceTryRange[0]).toLocaleString()}`
+                                    : `₺${Math.round(priceTryRange[0]).toLocaleString()}+`)
+                                : (priceRange[0] === priceRange[1]
+                                    ? `$${priceRange[0].toFixed(2)}`
+                                    : `$${priceRange[0].toFixed(2)}+`)}
                     </span>
                 )}
             </div>
@@ -1138,8 +1226,8 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                 disabled={isOutOfStock || isAddingToCart || isBuyingNow}
             >
                 {isAddingToCart ? (
-                    <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Adding...</>
-                ) : isOutOfStock ? "OUT OF STOCK" : "ADD TO CART"}
+                    <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />{t("product.addingToCart")}</>
+                ) : isOutOfStock ? t("product.outOfStock").toUpperCase() : t("product.addToCart").toUpperCase()}
             </Button>
             <Button
                 variant="outline"
@@ -1148,8 +1236,8 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                 disabled={isOutOfStock || isBuyingNow || isAddingToCart}
             >
                 {isBuyingNow ? (
-                    <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Processing...</>
-                ) : "BUY NOW"}
+                    <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />{t("product.processing")}</>
+                ) : t("product.buyNow").toUpperCase()}
             </Button>
         </div>
 

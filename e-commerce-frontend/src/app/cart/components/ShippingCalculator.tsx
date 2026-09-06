@@ -1,7 +1,9 @@
 "use client";
 import React, { useState } from 'react';
+import { useLocalization } from '@/lib/useLocalization';
 
 const ShippingCalculator = () => {
+    const { t, locale, formatPrice } = useLocalization();
     const [zipCode, setZipCode] = useState('');
     const [shippingCost, setShippingCost] = useState<number | null>(null);
 
@@ -12,13 +14,17 @@ const ShippingCalculator = () => {
 
     return (
         <div className="bg-white border border-border/60 p-6 mt-3">
-            <p className="text-[10px] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Estimate</p>
-            <h2 className="font-display text-lg tracking-widest text-foreground mb-4">SHIPPING</h2>
+            <p className="text-[10px] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">
+                {locale === "tr" ? "Hesaplama" : "Estimate"}
+            </p>
+            <h2 className="font-display text-lg tracking-widest text-foreground mb-4">
+                {t("cart.shipping").toUpperCase()}
+            </h2>
 
             <form onSubmit={calculateShipping} className="space-y-3">
                 <div>
                     <label htmlFor="zipCode" className="block text-xs text-muted-foreground mb-1.5 tracking-wide">
-                        Postal Code
+                        {t("checkout.pincode")}
                     </label>
                     <input
                         type="text"
@@ -33,16 +39,18 @@ const ShippingCalculator = () => {
                     type="submit"
                     className="w-full border border-foreground/20 text-foreground text-[11px] tracking-widest uppercase py-2.5 hover:bg-muted transition-colors"
                 >
-                    Calculate
+                    {locale === "tr" ? "Hesapla" : "Calculate"}
                 </button>
             </form>
 
             {shippingCost !== null && (
                 <div className="mt-4 pt-4 border-t border-border/50">
                     <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Estimated cost</span>
+                        <span className="text-muted-foreground">
+                            {locale === "tr" ? "Tahmini Kargo Ücreti" : "Estimated cost"}
+                        </span>
                         <span className="font-semibold text-foreground">
-                            {shippingCost.toLocaleString("en-US", { style: "currency", currency: "USD" })}
+                            {formatPrice(shippingCost)}
                         </span>
                     </div>
                 </div>

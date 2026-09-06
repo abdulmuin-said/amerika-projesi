@@ -10,9 +10,11 @@ import { fetchCartItems, updateCartItemAsync, removeFromCartAsync } from "@/stor
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { useEffect } from "react";
+import { useLocalization } from "@/lib/useLocalization";
 
 const CartPage = () => {
     const dispatch = useAppDispatch();
+    const { t, locale, formatPrice } = useLocalization();
     const { items: cartItems, loading, error } = useAppSelector((state) => state.cart);
     const [showModal, setShowModal] = useState(false);
     const [orderId, setOrderId] = useState("");
@@ -53,7 +55,9 @@ const CartPage = () => {
             <div className="w-full flex items-center justify-center min-h-[60vh]">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-7 h-7 border-2 border-[#c9a84c] border-t-transparent rounded-full animate-spin" />
-                    <p className="text-sm text-muted-foreground tracking-wide">Loading your cart...</p>
+                    <p className="text-sm text-muted-foreground tracking-wide">
+                        {locale === "tr" ? "Sepetiniz yükleniyor..." : "Loading your cart..."}
+                    </p>
                 </div>
             </div>
         );
@@ -74,12 +78,14 @@ const CartPage = () => {
 
                 {/* Page heading */}
                 <div className="mb-8 md:mb-10">
-                    <p className="text-[10px] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">Review</p>
+                    <p className="text-[10px] tracking-[0.2em] uppercase text-[#c9a84c] mb-1">
+                        {locale === "tr" ? "İnceleme" : "Review"}
+                    </p>
                     <h1 className="font-display text-3xl md:text-4xl tracking-widest text-foreground flex items-center gap-3">
-                        YOUR CART
+                        {t("cart.title").toUpperCase()}
                         {cartItems.length > 0 && (
                             <span className="text-base font-sans font-normal text-muted-foreground tracking-normal">
-                                ({cartItems.length} {cartItems.length === 1 ? "item" : "items"})
+                                ({cartItems.length} {cartItems.length === 1 ? t("cart.itemSingular") : t("cart.itemPlural")})
                             </span>
                         )}
                     </h1>
@@ -109,12 +115,12 @@ const CartPage = () => {
                             <Link href="/checkout" className="hidden lg:block">
                                 <button className="w-full mt-4 bg-[oklch(0.42_0.02_55)] hover:bg-[oklch(0.35_0.02_55)] text-white text-[11px] font-semibold tracking-widest uppercase py-4 transition-colors flex items-center justify-center gap-2">
                                     <ShoppingCart className="h-4 w-4" />
-                                    Proceed to Checkout
+                                    {t("cart.proceedToCheckout")}
                                 </button>
                             </Link>
 
                             <p className="hidden lg:block text-[10px] text-muted-foreground text-center mt-3 tracking-wide">
-                                Secure checkout · Free returns
+                                {locale === "tr" ? "Güvenli ödeme · Ücretsiz iade" : "Secure checkout · Free returns"}
                             </p>
                         </div>
                     </div>
@@ -125,24 +131,26 @@ const CartPage = () => {
             {cartItems.length > 0 && (
                 <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[oklch(0.42_0.02_55)] border-t-2 border-[#c9a84c]">
                     <div className="flex items-center justify-between px-5 pt-3 pb-1">
-                        <p className="text-[10px] tracking-[0.2em] uppercase text-[#c9a84c]/80">Subtotal</p>
-                        <p className="text-[10px] tracking-[0.2em] uppercase text-[#c9a84c]/80">incl. shipping</p>
+                        <p className="text-[10px] tracking-[0.2em] uppercase text-[#c9a84c]/80">{t("cart.subtotal")}</p>
+                        <p className="text-[10px] tracking-[0.2em] uppercase text-[#c9a84c]/80">
+                            {locale === "tr" ? "kargo dahil" : "incl. shipping"}
+                        </p>
                     </div>
                     <div className="flex items-center justify-between px-5 pb-2">
                         <div>
                             <p className="text-xl font-semibold text-white">
-                                ${grandTotal.toFixed(2)}
+                                {formatPrice(grandTotal)}
                             </p>
                             {discount > 0 && (
                                 <p className="text-[11px] text-amber-400 mt-0.5">
-                                    🎉 You saved ${discount.toFixed(2)} on this order
+                                    🎉 {t("cart.youSave", { amount: formatPrice(discount) })}
                                 </p>
                             )}
                         </div>
                         <Link href="/checkout">
                             <button className="bg-[#c9a84c] hover:bg-[#b8960c] text-[oklch(0.16_0.02_55)] text-[11px] font-semibold tracking-widest uppercase px-6 py-2.5 transition-colors flex items-center gap-2">
                                 <ShoppingCart className="h-3.5 w-3.5" />
-                                Checkout
+                                {locale === "tr" ? "Ödemeye Geç" : "Checkout"}
                             </button>
                         </Link>
                     </div>

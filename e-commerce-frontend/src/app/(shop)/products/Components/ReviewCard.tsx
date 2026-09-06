@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Rating, RatingButton } from "@/components/ui/rating";
+import { useLocalization } from "@/lib/useLocalization";
 
 interface ReviewCardProps {
   review: {
@@ -32,8 +33,10 @@ export const ReviewCard = ({
   isOwner = false,
   canModerate = false,
 }: ReviewCardProps) => {
+  const { t, locale, getLocalizedReview } = useLocalization();
   const [expanded, setExpanded] = useState(false);
-  const isLong = review.reviewText.length > 220;
+  const localizedText = getLocalizedReview(review.reviewText);
+  const isLong = localizedText.length > 220;
 
   const customerInitials = review.customer.customerName
     .split(' ')
@@ -63,18 +66,18 @@ export const ReviewCard = ({
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-medium text-sm text-foreground">{review.customer.customerName}</span>
               {isOwner && (
-                <Badge variant="default" className="text-xs py-0 h-5">You</Badge>
+                <Badge variant="default" className="text-xs py-0 h-5">{locale === "tr" ? "Siz" : "You"}</Badge>
               )}
               {review.verifiedPurchase && (
                 <Badge variant="outline" className="text-xs py-0 h-5 border-green-500/40 text-green-600 bg-green-50 dark:bg-green-950/30 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" />
-                  Verified
+                  {locale === "tr" ? "Doğrulanmış" : "Verified"}
                 </Badge>
               )}
               {canModerate && !isOwner && (
                 <Badge variant="outline" className="text-xs py-0 h-5 flex items-center gap-1">
                   <Shield className="w-3 h-3" />
-                  Mod
+                  {locale === "tr" ? "Moderatör" : "Mod"}
                 </Badge>
               )}
             </div>
@@ -85,7 +88,7 @@ export const ReviewCard = ({
               ))}
             </Rating>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {reviewDate.toLocaleDateString('en-US', {
+              {reviewDate.toLocaleDateString(locale === "tr" ? 'tr-TR' : 'en-US', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric',
@@ -110,7 +113,7 @@ export const ReviewCard = ({
                   size="sm"
                   onClick={() => onEdit!(review.reviewId)}
                   className="h-7 w-7 p-0 hover:bg-muted"
-                  title={isOwner ? "Edit your review" : "Moderate review"}
+                  title={isOwner ? (locale === "tr" ? "Yorumunuzu düzenleyin" : "Edit your review") : "Moderate review"}
                 >
                   <Edit2 className="h-3 w-3" />
                 </Button>
@@ -121,7 +124,7 @@ export const ReviewCard = ({
                   size="sm"
                   onClick={() => onDelete!(review.reviewId)}
                   className="h-7 w-7 p-0 hover:bg-destructive/10 hover:text-destructive"
-                  title={isOwner ? "Delete your review" : "Delete review (Admin)"}
+                  title={isOwner ? (locale === "tr" ? "Yorumunuzu silin" : "Delete your review") : "Delete review (Admin)"}
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>
@@ -134,7 +137,7 @@ export const ReviewCard = ({
       {/* Review text indented under avatar */}
       <div className="mt-3 ml-12">
         <p className={`text-sm text-foreground leading-relaxed ${!expanded && isLong ? "line-clamp-4" : ""}`}>
-          {review.reviewText}
+          {localizedText}
         </p>
         {isLong && (
           <button
@@ -142,7 +145,7 @@ export const ReviewCard = ({
             onClick={() => setExpanded(e => !e)}
             className="mt-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            {expanded ? "Read less" : "Read more"}
+            {expanded ? t("reviews.readLess") : t("reviews.readMore")}
           </button>
         )}
       </div>

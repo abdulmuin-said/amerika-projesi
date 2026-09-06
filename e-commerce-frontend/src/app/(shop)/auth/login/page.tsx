@@ -15,6 +15,7 @@ import { login } from '@/store/slices/authSlice';
 import { toast } from 'sonner';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { TokenPayload } from '@/types/domains/auth';
+import { useLocalization } from '@/lib/useLocalization';
 
 const loginSchema = z.object({
     email: z.string().email('Invalid email address'),
@@ -26,14 +27,15 @@ function LoginContent() {
     const searchParams = useSearchParams();
     const { loading, authenticated } = useAppSelector(state => state.auth);
     const dispatch = useAppDispatch();
+    const { t, locale } = useLocalization();
     const returnUrl = useMemo(() => searchParams.get('returnUrl') || searchParams.get('redirect') || '/', [searchParams]);
 
     useEffect(() => {
         if (!loading && authenticated) {
-            toast.success('You are logged in!', { icon: null, richColors: true });
+            toast.success(locale === 'tr' ? 'Başarıyla giriş yaptınız!' : 'You are logged in!', { icon: null, richColors: true });
             router.push(returnUrl);
         }
-    }, [loading, authenticated, returnUrl, router]);
+    }, [loading, authenticated, returnUrl, router, locale]);
 
     const form = useForm<z.infer<typeof loginSchema>>({
         resolver: zodResolver(loginSchema),
@@ -52,23 +54,25 @@ function LoginContent() {
             } else {
                 form.setError('root', {
                     type: 'manual',
-                    message: result.payload as string
+                    message: (result.payload as string) || (locale === 'tr' ? 'Giriş başarısız oldu' : 'Login failed')
                 });
             }
         } catch (error) {
             form.setError('root', {
                 type: 'manual',
-                message: 'An error occurred. Please check the credentials and try again.'
+                message: locale === 'tr' 
+                    ? 'Bir hata oluştu. Lütfen bilgilerinizi kontrol edip tekrar deneyin.' 
+                    : 'An error occurred. Please check the credentials and try again.'
             });
         }
     };
 
     return (
         <div className="container mx-auto py-10">
-            <Card className="max-w-md mx-auto">
+            <Card className="max-w-md mx-auto shadow-sm border-stone-200">
                 <CardHeader>
-                    <CardTitle>Welcome Back</CardTitle>
-                    <CardDescription>Sign in to your account</CardDescription>
+                    <CardTitle className="font-serif text-2xl">{t("auth.loginTitle")}</CardTitle>
+                    <CardDescription>{t("auth.loginSubtitle")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
@@ -78,9 +82,9 @@ function LoginContent() {
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Email</FormLabel>
+                                        <FormLabel>{t("auth.emailLabel")}</FormLabel>
                                         <FormControl>
-                                            <Input type="email" placeholder="john@example.com" {...field} />
+                                            <Input type="email" placeholder={t("auth.emailPlaceholder")} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -91,9 +95,9 @@ function LoginContent() {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Password</FormLabel>
+                                        <FormLabel>{t("auth.passwordLabel")}</FormLabel>
                                         <FormControl>
-                                            <Input type="password" placeholder="********" {...field} />
+                                            <Input type="password" placeholder={t("auth.passwordPlaceholder")} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -106,27 +110,32 @@ function LoginContent() {
                                 </div>
                             )}
 
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between pt-2">
                                 <Button
                                     type="submit"
                                     disabled={form.formState.isSubmitting}
+                                    className="bg-slate-900 hover:bg-slate-800 text-white"
                                 >
-                                    {form.formState.isSubmitting ? 'Signing in...' : 'Sign in'}
+                                    {form.formState.isSubmitting ? (locale === 'tr' ? 'Giriş yapılıyor...' : 'Signing in...') : t("auth.signInButton")}
                                 </Button>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    onClick={() => router.push('/auth/forgot-password')}
-                                >
-                                    Forgot password?
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    onClick={() => router.push('/auth/register')}
-                                >
-                                    Create account
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => router.push('/auth/forgot-password')}
+                                    >
+                                        {t("auth.forgotPassword")}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => router.push('/auth/register')}
+                                    >
+                                        {t("auth.createAccount")}
+                                    </Button>
+                                </div>
                             </div>
                         </form>
                     </Form>

@@ -20,6 +20,7 @@ import { COUNTRY_OPTIONS } from "@/lib/countries";
 import { CreditCard, Truck, MapPin, Home, ShieldCheck, Sparkles, Lock } from "lucide-react";
 import { CreatePaymentIntentRequest } from "@/services/stripe";
 import { VisaIcon, MastercardIcon, AmexIcon, DiscoverIcon } from "@/app/components/PaymentBadges";
+import { useLocalization } from "@/lib/useLocalization";
 
 // ─── Validation schema ────────────────────────────────────────────────────────
 
@@ -89,6 +90,8 @@ export default function CheckoutForm({
     subtotalAmount,
     currentAddress,
 }: CheckoutFormProps) {
+    const { t, formatPrice, locale } = useLocalization();
+
     function calculateShipping(): number {
         let total = 0;
         cartItems.forEach((item) => {
@@ -140,19 +143,19 @@ export default function CheckoutForm({
         form.setValue("expireMonth", "12", { shouldValidate: true });
         form.setValue("expireYear", "28", { shouldValidate: true });
         form.setValue("cvc", "123", { shouldValidate: true });
-        toast.success("Stripe 4242 test card details loaded!");
+        toast.success(locale === "tr" ? "Stripe 4242 test kartı bilgileri yüklendi!" : "Stripe 4242 test card details loaded!");
     };
 
     const handleSubmit = (data: FieldValues) => {
         if (data.addressType === "custom") {
             const s = data.shippingAddress;
             const missing: string[] = [];
-            if (!s?.street?.trim()) missing.push("Street");
-            if (!s?.city?.trim()) missing.push("City");
-            if (!s?.pincode?.trim() || isNaN(Number(s.pincode))) missing.push("ZIP / Postal Code");
-            if (!s?.country?.trim()) missing.push("Country");
+            if (!s?.street?.trim()) missing.push(t("checkout.street"));
+            if (!s?.city?.trim()) missing.push(t("checkout.city"));
+            if (!s?.pincode?.trim() || isNaN(Number(s.pincode))) missing.push(t("checkout.pincode"));
+            if (!s?.country?.trim()) missing.push(t("checkout.country"));
             if (missing.length > 0) {
-                toast.error(`Please fill: ${missing.join(", ")}`);
+                toast.error(locale === "tr" ? `Lütfen eksik alanları doldurun: ${missing.join(", ")}` : `Please fill: ${missing.join(", ")}`);
                 return;
             }
         }
@@ -161,7 +164,7 @@ export default function CheckoutForm({
             (item) => !shippingMethods[item.cartItemId]?.shippingMethodId
         );
         if (missingShipping.length > 0) {
-            toast.error("Shipping method loading. Please wait a moment and try again.");
+            toast.error(locale === "tr" ? "Kargo yöntemi yükleniyor. Lütfen birkaç saniye bekleyip tekrar deneyin." : "Shipping method loading. Please wait a moment and try again.");
             return;
         }
 
@@ -231,16 +234,18 @@ export default function CheckoutForm({
                     {/* ── Left Side ── */}
                     <div className="lg:col-span-2 space-y-6">
                         <div className="flex items-center justify-between">
-                            <h1 className="text-3xl font-bold tracking-tight text-gray-900 font-serif">Checkout</h1>
+                            <h1 className="text-3xl font-bold tracking-tight text-gray-900 font-serif">{t("checkout.title")}</h1>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
                                 <Lock className="w-3.5 h-3.5 text-emerald-600" />
-                                <span className="text-emerald-700 font-medium">Stripe 256-Bit SSL Encrypted</span>
+                                <span className="text-emerald-700 font-medium">
+                                    {locale === "tr" ? "Stripe 256-Bit SSL Şifreli" : "Stripe 256-Bit SSL Encrypted"}
+                                </span>
                             </div>
                         </div>
 
                         {/* Shipping Address */}
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gray-800">1. Shipping Address</h3>
+                            <h3 className="text-lg font-semibold text-gray-800">1. {t("checkout.shippingAddress")}</h3>
                             <RadioGroup
                                 value={form.watch("addressType")}
                                 onValueChange={(v: "current" | "custom") => form.setValue("addressType", v)}
@@ -256,12 +261,12 @@ export default function CheckoutForm({
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 font-medium text-gray-900">
                                             <Home className="h-4 w-4 text-gray-700" />
-                                            Primary Address
+                                            {t("checkout.addressTypeCurrent")}
                                         </div>
                                         <p className="text-sm text-gray-500 mt-1">
                                             {currentAddress?.street
                                                 ? `${currentAddress.street}, ${currentAddress.city}`
-                                                : "742 Evergreen Terrace, New York, NY"}
+                                                : locale === "tr" ? "Bağdat Caddesi No:142, Kadıköy, İstanbul" : "742 Evergreen Terrace, New York, NY"}
                                         </p>
                                     </div>
                                 </Label>
@@ -276,9 +281,11 @@ export default function CheckoutForm({
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 font-medium text-gray-900">
                                             <MapPin className="h-4 w-4 text-gray-700" />
-                                            Alternate US Address
+                                            {t("checkout.addressTypeCustom")}
                                         </div>
-                                        <p className="text-sm text-gray-500 mt-1">Deliver to a new location</p>
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            {locale === "tr" ? "Farklı bir teslimat adresi girin" : "Deliver to a new location"}
+                                        </p>
                                     </div>
                                 </Label>
                             </RadioGroup>
@@ -290,9 +297,9 @@ export default function CheckoutForm({
                                         name="shippingAddress.street"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Street Address</FormLabel>
+                                                <FormLabel>{t("checkout.street")}</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="123 Gallery Ave, Suite 400" {...field} />
+                                                    <Input placeholder={locale === "tr" ? "Örnek Mah. Atatürk Cad. No: 12" : "123 Gallery Ave, Suite 400"} {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -304,8 +311,8 @@ export default function CheckoutForm({
                                             name="shippingAddress.city"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel>City</FormLabel>
-                                                    <FormControl><Input placeholder="Los Angeles" {...field} /></FormControl>
+                                                    <FormLabel>{t("checkout.city")}</FormLabel>
+                                                    <FormControl><Input placeholder={locale === "tr" ? "İstanbul / Kadıköy" : "Los Angeles"} {...field} /></FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -315,8 +322,8 @@ export default function CheckoutForm({
                                             name="shippingAddress.pincode"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel>ZIP / Postal Code</FormLabel>
-                                                    <FormControl><Input placeholder="90001" {...field} /></FormControl>
+                                                    <FormLabel>{t("checkout.pincode")}</FormLabel>
+                                                    <FormControl><Input placeholder={locale === "tr" ? "34710" : "90001"} {...field} /></FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -327,11 +334,11 @@ export default function CheckoutForm({
                                         name="shippingAddress.country"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Country</FormLabel>
+                                                <FormLabel>{t("checkout.country")}</FormLabel>
                                                 <FormControl>
-                                                    <Select value={field.value || "United States"} onValueChange={field.onChange}>
+                                                    <Select value={field.value || (locale === "tr" ? "Turkey" : "United States")} onValueChange={field.onChange}>
                                                         <SelectTrigger>
-                                                            <SelectValue placeholder="Select country" />
+                                                            <SelectValue placeholder={locale === "tr" ? "Ülke seçiniz" : "Select country"} />
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             {COUNTRY_OPTIONS.map(({ value, label }) => (
@@ -351,7 +358,7 @@ export default function CheckoutForm({
                         {/* Payment Card */}
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-gray-800">2. Payment Method</h3>
+                                <h3 className="text-lg font-semibold text-gray-800">2. {t("checkout.paymentDetails")}</h3>
                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                     <span className="font-semibold text-slate-700">Powered by</span>
                                     <span className="font-extrabold text-[#635BFF] text-sm tracking-tight">stripe</span>
@@ -364,10 +371,10 @@ export default function CheckoutForm({
                                     <div>
                                         <div className="flex items-center gap-2 text-indigo-950 font-semibold text-sm">
                                             <Sparkles className="w-4 h-4 text-indigo-600" />
-                                            Live Showcase Sandbox Card
+                                            {locale === "tr" ? "Canlı Test / Sandbox Kartı" : "Live Showcase Sandbox Card"}
                                         </div>
                                         <p className="text-xs text-indigo-700 mt-0.5">
-                                            Test live checkout using standard Stripe card <span className="font-mono font-medium">4242 •••• •••• 4242</span>
+                                            {locale === "tr" ? "Stripe test kartı ile güvenle deneyin:" : "Test live checkout using standard Stripe card"} <span className="font-mono font-medium">4242 •••• •••• 4242</span>
                                         </p>
                                     </div>
                                     <Button
@@ -377,14 +384,16 @@ export default function CheckoutForm({
                                         onClick={handleAutoFillTestCard}
                                         className="bg-white hover:bg-indigo-50 border-indigo-300 text-indigo-700 font-medium text-xs whitespace-nowrap shadow-sm"
                                     >
-                                        Auto-Fill Test Card
+                                        {locale === "tr" ? "Test Kartını Doldur" : "Auto-Fill Test Card"}
                                     </Button>
                                 </div>
 
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <CreditCard className="h-5 w-5 text-gray-600" />
-                                        <h4 className="font-medium text-gray-900">Card Information</h4>
+                                        <h4 className="font-medium text-gray-900">
+                                            {locale === "tr" ? "Kart Bilgileri" : "Card Information"}
+                                        </h4>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         {cardType ? (
@@ -407,9 +416,9 @@ export default function CheckoutForm({
                                     name="cardHolderName"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Name on Card</FormLabel>
+                                            <FormLabel>{t("checkout.cardholderName")}</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="e.g. Jane Doe" autoComplete="off" {...field} />
+                                                <Input placeholder={locale === "tr" ? "Ahmet Yılmaz" : "e.g. Jane Doe"} autoComplete="off" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -421,7 +430,7 @@ export default function CheckoutForm({
                                     name="cardNumber"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Card Number</FormLabel>
+                                            <FormLabel>{t("checkout.cardNumber")}</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     placeholder="4242 4242 4242 4242"
@@ -444,7 +453,7 @@ export default function CheckoutForm({
                                         name="expireMonth"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Exp Month</FormLabel>
+                                                <FormLabel>{t("checkout.expireMonth")}</FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="12" inputMode="numeric" autoComplete="off" className="font-mono text-center" maxLength={2} {...field} />
                                                 </FormControl>
@@ -457,7 +466,7 @@ export default function CheckoutForm({
                                         name="expireYear"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Exp Year</FormLabel>
+                                                <FormLabel>{t("checkout.expireYear")}</FormLabel>
                                                 <FormControl>
                                                     <Input placeholder="28" inputMode="numeric" autoComplete="off" className="font-mono text-center" maxLength={2} {...field} />
                                                 </FormControl>
@@ -470,7 +479,7 @@ export default function CheckoutForm({
                                         name="cvc"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>CVC / CVV</FormLabel>
+                                                <FormLabel>{t("checkout.cvc")}</FormLabel>
                                                 <FormControl>
                                                     <Input type="password" placeholder="123" inputMode="numeric" autoComplete="off" className="font-mono text-center" maxLength={4} {...field} />
                                                 </FormControl>
@@ -482,9 +491,7 @@ export default function CheckoutForm({
 
                                 <div className="flex items-center gap-2 pt-3 text-xs text-gray-500 border-t">
                                     <ShieldCheck className="h-4 w-4 text-emerald-600 flex-shrink-0" />
-                                    <span>
-                                        Protected with Stripe TLS encryption and PCI-DSS Level 1 certification. Card details are securely tokenized.
-                                    </span>
+                                    <span>{t("checkout.securePaymentNotice")}</span>
                                 </div>
                             </div>
                         </div>
@@ -494,38 +501,42 @@ export default function CheckoutForm({
                     <div className="space-y-6">
                         <Card className="sticky top-20 shadow-md border-gray-200">
                             <CardHeader className="pb-4">
-                                <CardTitle className="text-xl font-bold font-serif">Order Summary</CardTitle>
+                                <CardTitle className="text-xl font-bold font-serif">{t("cart.orderSummary")}</CardTitle>
                                 <div className="mt-3 p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl">
                                     <div className="flex items-center gap-2 mb-1">
                                         <Truck className="h-4 w-4 text-slate-800" />
-                                        <span className="font-semibold text-sm text-slate-900">FedEx Ground Delivery</span>
+                                        <span className="font-semibold text-sm text-slate-900">
+                                            {locale === "tr" ? "Sigortalı Hızlı Teslimat" : "FedEx Ground Delivery"}
+                                        </span>
                                     </div>
-                                    <p className="text-xs text-slate-600">Delivered within 3-5 business days with insured art packaging</p>
+                                    <p className="text-xs text-slate-600">
+                                        {locale === "tr" ? "3-5 iş günü içinde sigortalı özel sanat ambalajında teslim" : "Delivered within 3-5 business days with insured art packaging"}
+                                    </p>
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Subtotal</span>
-                                    <span className="font-medium">${subtotalAmount.toFixed(2)}</span>
+                                    <span className="text-gray-600">{t("cart.subtotal")}</span>
+                                    <span className="font-medium">{formatPrice(subtotalAmount)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">US Standard Shipping</span>
+                                    <span className="text-gray-600">{t("cart.shipping")}</span>
                                     <span className="font-medium">
                                         {shippingAmount === 0 ? (
-                                            <span className="text-emerald-600 font-semibold">FREE</span>
+                                            <span className="text-emerald-600 font-semibold">{t("cart.freeShipping")}</span>
                                         ) : (
-                                            `$${shippingAmount.toFixed(2)}`
+                                            formatPrice(shippingAmount)
                                         )}
                                     </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Estimated Sales Tax</span>
-                                    <span className="font-medium">$0.00</span>
+                                    <span className="text-gray-600">{locale === "tr" ? "Tahmini KDV / Vergi" : "Estimated Sales Tax"}</span>
+                                    <span className="font-medium">{formatPrice(0)}</span>
                                 </div>
                                 <Separator />
                                 <div className="flex justify-between text-xl font-bold text-gray-900">
-                                    <span>Total Due</span>
-                                    <span className="font-serif">${billTotal.toFixed(2)}</span>
+                                    <span>{locale === "tr" ? "Toplam Tutar" : "Total Due"}</span>
+                                    <span className="font-serif">{formatPrice(billTotal)}</span>
                                 </div>
                             </CardContent>
                             <CardFooter>
@@ -537,12 +548,12 @@ export default function CheckoutForm({
                                     {loading ? (
                                         <>
                                             <Spinner className="mr-2" />
-                                            Processing Payment...
+                                            {t("checkout.processingPayment")}
                                         </>
                                     ) : (
                                         <>
                                             <ShieldCheck className="mr-2 h-5 w-5" />
-                                            Complete Order (${billTotal.toFixed(2)})
+                                            {t("checkout.placeOrder")} ({formatPrice(billTotal)})
                                         </>
                                     )}
                                 </Button>

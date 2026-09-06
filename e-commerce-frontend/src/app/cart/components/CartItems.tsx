@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Trash2, Minus, Plus, FrameIcon, Loader2 } from 'lucide-react';
 import { CartItemPreview } from '@/types/domains/cart';
 import Link from 'next/link';
+import { useLocalization } from '@/lib/useLocalization';
 
 interface CartItemsProps {
     items: CartItemPreview[];
@@ -25,6 +26,7 @@ function CartItemCard({ item, onQuantityChange, onRemoveItem }: {
     onQuantityChange: (cartItemId: number, newQuantity: number) => Promise<void>;
     onRemoveItem: (cartItemId: number) => Promise<void>;
 }) {
+    const { t, formatPrice } = useLocalization();
     const [imgError, setImgError] = useState(false);
     const [isRemoving, setIsRemoving] = useState(false);
     const [updatingDir, setUpdatingDir] = useState<'inc' | 'dec' | null>(null);
@@ -113,7 +115,7 @@ function CartItemCard({ item, onQuantityChange, onRemoveItem }: {
                             ? <Loader2 className="h-4 w-4 animate-spin" />
                             : <Trash2 className="h-4 w-4" />
                         }
-                        <span className="hidden sm:inline">Remove</span>
+                        <span className="hidden sm:inline">{t("cart.remove")}</span>
                     </button>
                 </div>
 
@@ -156,11 +158,11 @@ function CartItemCard({ item, onQuantityChange, onRemoveItem }: {
                     {/* Price */}
                     <div className="text-right">
                         <p className="text-sm sm:text-base font-semibold text-foreground leading-tight">
-                            ${lineTotal.toFixed(2)}
+                            {formatPrice(lineTotal)}
                         </p>
                         {hasDiscount && originalLineTotal && (
                             <p className="text-xs text-muted-foreground line-through leading-tight">
-                                ${originalLineTotal.toFixed(2)}
+                                {formatPrice(originalLineTotal)}
                             </p>
                         )}
                     </div>
@@ -171,18 +173,20 @@ function CartItemCard({ item, onQuantityChange, onRemoveItem }: {
 }
 
 const CartItems: React.FC<CartItemsProps> = ({ items, onQuantityChange, onRemoveItem }) => {
+    const { t, locale } = useLocalization();
+
     if (items.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
                 <div className="w-16 h-px bg-[#c9a84c]/40 mb-8" />
-                <p className="text-[10px] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">Cart</p>
-                <h2 className="font-display text-2xl tracking-widest text-foreground mb-2">Your cart is empty</h2>
+                <p className="text-[10px] tracking-[0.2em] uppercase text-[#c9a84c] mb-3">{locale === "tr" ? "Sepet" : "Cart"}</p>
+                <h2 className="font-display text-2xl tracking-widest text-foreground mb-2">{t("cart.emptyTitle")}</h2>
                 <p className="text-sm text-muted-foreground mb-8 max-w-xs">
-                    Discover our curated collection of premium wall art and frames.
+                    {t("cart.emptySubtitle")}
                 </p>
                 <Link href="/products">
                     <button className="bg-[oklch(0.42_0.02_55)] hover:bg-[oklch(0.35_0.02_55)] text-white text-[11px] tracking-widest uppercase px-8 py-3 transition-colors">
-                        Explore Collection
+                        {t("home.shopByCategory.exploreCollection")}
                     </button>
                 </Link>
             </div>

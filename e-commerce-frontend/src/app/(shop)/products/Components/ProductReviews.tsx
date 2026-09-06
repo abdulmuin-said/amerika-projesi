@@ -13,6 +13,7 @@ import { ReviewDTO } from "@/types/domains/review";
 import { useAppSelector } from "@/store/hooks";
 import { UserRole } from "@/types/domains/user";
 import { toast } from "sonner";
+import { useLocalization } from "@/lib/useLocalization";
 
 interface Review {
   reviewId: number;
@@ -42,6 +43,7 @@ export const ProductReviews = ({
   serverAverageRating,
   serverReviewCount,
 }: ProductReviewsProps) => {
+  const { t, locale } = useLocalization();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -181,15 +183,17 @@ export const ProductReviews = ({
       <Dialog open={confirmDeleteId !== null} onOpenChange={(open) => { if (!open) setConfirmDeleteId(null); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete Review</DialogTitle>
+            <DialogTitle>{t("reviews.deleteReview")}</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">Are you sure you want to delete this review? This action cannot be undone.</p>
+          <p className="text-sm text-muted-foreground">
+            {locale === "tr" ? "Bu değerlendirmeyi silmek istediğinize emin misiniz? Bu işlem geri alınamaz." : "Are you sure you want to delete this review? This action cannot be undone."}
+          </p>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setConfirmDeleteId(null)} disabled={deleteReview.isLoading}>
-              Cancel
+              {locale === "tr" ? "İptal" : "Cancel"}
             </Button>
             <Button variant="destructive" onClick={handleConfirmDelete} disabled={deleteReview.isLoading}>
-              {deleteReview.isLoading ? "Deleting..." : "Delete"}
+              {deleteReview.isLoading ? (locale === "tr" ? "Siliniyor..." : "Deleting...") : (locale === "tr" ? "Sil" : "Delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -202,15 +206,17 @@ export const ProductReviews = ({
         <div className="md:border-r md:border-border md:pr-8 min-w-0 order-last md:order-first">
 
           {/* Section title */}
-          <h2 className="font-display text-3xl font-medium mb-5">Customer Reviews</h2>
+          <h2 className="font-display text-3xl font-medium mb-5">{t("reviews.title")}</h2>
 
           {/* Header row */}
           <div className="flex flex-wrap items-center justify-between gap-3 mb-5 border-t border-border pt-4">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">All Reviews</h3>
+              <h3 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
+                {locale === "tr" ? "Tüm Yorumlar" : "All Reviews"}
+              </h3>
               <Badge variant="secondary">{totalReviewCount}</Badge>
               {canDeleteAnyReview && (
-                <Badge variant="outline" className="text-xs">Admin View</Badge>
+                <Badge variant="outline" className="text-xs">{locale === "tr" ? "Yönetici Görünümü" : "Admin View"}</Badge>
               )}
               {isLoading && (
                 <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -219,9 +225,9 @@ export const ProductReviews = ({
             <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
               {(["NEWEST", "HIGHEST_RATED", "LOWEST_RATED"] as const).map((option) => {
                 const labels: Record<string, string> = {
-                  NEWEST: "Newest",
-                  HIGHEST_RATED: "Highest",
-                  LOWEST_RATED: "Lowest",
+                  NEWEST: locale === "tr" ? "En Yeni" : "Newest",
+                  HIGHEST_RATED: locale === "tr" ? "En Yüksek" : "Highest",
+                  LOWEST_RATED: locale === "tr" ? "En Düşük" : "Lowest",
                 };
                 return (
                   <button
@@ -251,7 +257,7 @@ export const ProductReviews = ({
           ) : reviews.length === 0 ? (
             <div className="py-14 text-center border-t border-border">
               <MessageCircle className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-30" />
-              <p className="text-sm text-muted-foreground">No reviews yet. Be the first to share your experience.</p>
+              <p className="text-sm text-muted-foreground">{t("reviews.noReviewsYet")}</p>
             </div>
           ) : (
             <div className="border-t border-border">
@@ -272,11 +278,13 @@ export const ProductReviews = ({
           {totalPages > 1 && (
             <div className="flex items-center justify-between pt-4 border-t border-border mt-1">
               <Button variant="ghost" size="sm" onClick={() => setCurrentPage(p => p - 1)} disabled={!hasPrev || isLoading}>
-                <ChevronLeft className="h-4 w-4 mr-1" />Previous
+                <ChevronLeft className="h-4 w-4 mr-1" />{locale === "tr" ? "Önceki" : "Previous"}
               </Button>
-              <span className="text-sm text-muted-foreground">Page {currentPage} of {totalPages}</span>
+              <span className="text-sm text-muted-foreground">
+                {locale === "tr" ? `Sayfa ${currentPage} / ${totalPages}` : `Page ${currentPage} of ${totalPages}`}
+              </span>
               <Button variant="ghost" size="sm" onClick={() => setCurrentPage(p => p + 1)} disabled={!hasNext || isLoading}>
-                Next<ChevronRight className="h-4 w-4 ml-1" />
+                {locale === "tr" ? "Sonraki" : "Next"}<ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
           )}
@@ -298,7 +306,7 @@ export const ProductReviews = ({
               </Rating>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Based on {totalReviewCount} {totalReviewCount === 1 ? "review" : "reviews"}
+              {t("reviews.basedOn", { count: totalReviewCount })}
             </p>
           </div>
 
@@ -322,7 +330,7 @@ export const ProductReviews = ({
           {/* Write review form — aligned below the bars */}
           <div className="border-t border-border pt-6">
             <h3 className="font-display text-xl font-medium mb-4">
-              {editingReview ? "Edit Your Review" : "Share Your Experience"}
+              {editingReview ? t("reviews.editReview") : t("reviews.writeReview")}
             </h3>
             <ReviewForm
               productId={productId}

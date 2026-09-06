@@ -20,6 +20,8 @@ import * as productServices from "@/services/product";
 import { useAppSelector } from "@/store/hooks";
 import { getPromotionForProduct } from "@/lib/utils";
 import { SlidersHorizontal, X } from "lucide-react";
+import { useLocalization } from "@/lib/useLocalization";
+import { buildPillarCategoryTree } from "@/lib/categories";
 
 const PAGE_SIZE = 12;
 
@@ -42,6 +44,8 @@ interface ProductGridProps {
 }
 
 const ProductGrid = ({ categories, onCategoryChange: onCategoryChangeProp, selectedCategoryId: selectedCategoryIdProp }: ProductGridProps) => {
+   const { t, locale, currency } = useLocalization();
+   const pillarCategories = buildPillarCategoryTree(categories, locale);
    const [gridColumns, setGridColumns] = useState(3);
    const userOverrideRef = useRef(false);
    const [sheetOpen, setSheetOpen] = useState(false);
@@ -109,15 +113,15 @@ const ProductGrid = ({ categories, onCategoryChange: onCategoryChangeProp, selec
       if (selectedCategoryIdProp === undefined) return;
       setSelectedCategoryId(selectedCategoryIdProp);
       if (selectedCategoryIdProp !== null) {
-         setCurrentCategory(findCategoryById(categories, selectedCategoryIdProp) ?? null);
+         setCurrentCategory(findCategoryById(pillarCategories, selectedCategoryIdProp) ?? null);
       } else {
          setCurrentCategory(null);
       }
-   }, [selectedCategoryIdProp, categories]);
+   }, [selectedCategoryIdProp, pillarCategories]);
 
    const handleCategoryChange = (categoryId: number | null) => {
       setSelectedCategoryId(categoryId);
-      setCurrentCategory(categoryId !== null ? (findCategoryById(categories, categoryId) ?? null) : null);
+      setCurrentCategory(categoryId !== null ? (findCategoryById(pillarCategories, categoryId) ?? null) : null);
       onCategoryChangeProp?.(categoryId);
    };
 
@@ -168,13 +172,15 @@ const ProductGrid = ({ categories, onCategoryChange: onCategoryChangeProp, selec
             <Breadcrumb className="mb-6">
                <BreadcrumbList>
                   <BreadcrumbItem>
-                     <BreadcrumbLink href="/" className="text-muted-foreground hover:text-foreground">Home</BreadcrumbLink>
+                     <BreadcrumbLink href="/" className="text-muted-foreground hover:text-foreground">
+                        {t("catalog.breadcrumbHome")}
+                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   {(currentCategory || selectedCategoryId !== null) && (
                      <>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
-                           <BreadcrumbPage>{currentCategory?.name ?? "Products"}</BreadcrumbPage>
+                           <BreadcrumbPage>{currentCategory?.name ?? t("catalog.breadcrumbProducts")}</BreadcrumbPage>
                         </BreadcrumbItem>
                      </>
                   )}
@@ -187,7 +193,7 @@ const ProductGrid = ({ categories, onCategoryChange: onCategoryChangeProp, selec
                <aside className="hidden lg:block">
                   <div className="sticky top-[5.5rem]">
                      <FilterSidebar
-                        categories={categories}
+                        categories={pillarCategories}
                         onCategoryChange={handleCategoryChange}
                         selectedCategoryId={selectedCategoryId}
                         priceRange={priceRange}
@@ -211,7 +217,7 @@ const ProductGrid = ({ categories, onCategoryChange: onCategoryChangeProp, selec
                         )}
                         {(priceRange[0] > 0 || priceRange[1] < 100000) && (
                            <span className="flex items-center gap-1.5 px-3 py-1 text-xs tracking-wide border border-[#c9a84c]/40 bg-[#c9a84c]/10 text-foreground">
-                              ${priceRange[0].toLocaleString()} – ${priceRange[1].toLocaleString()}
+                              {currency === "TRY" ? "₺" : "$"}{priceRange[0].toLocaleString()} – {currency === "TRY" ? "₺" : "$"}{priceRange[1].toLocaleString()}
                               <button onClick={() => setPriceRange([0, 100000])} className="hover:text-[#c9a84c] transition-colors">
                                  <X className="h-3 w-3" />
                               </button>
@@ -221,7 +227,7 @@ const ProductGrid = ({ categories, onCategoryChange: onCategoryChangeProp, selec
                            onClick={() => { handleCategoryChange(null); setPriceRange([0, 100000]); }}
                            className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
                         >
-                           Clear all
+                           {t("catalog.clearAll")}
                         </button>
                      </div>
                   )}
@@ -236,16 +242,16 @@ const ProductGrid = ({ categories, onCategoryChange: onCategoryChangeProp, selec
                               <SheetTrigger asChild>
                                  <Button variant="outline" size="sm" className="rounded-none gap-2">
                                     <SlidersHorizontal className="h-3.5 w-3.5" />
-                                    Filters
+                                    {t("catalog.filters")}
                                  </Button>
                               </SheetTrigger>
                               <SheetContent side="left" className="p-0 w-[90vw] sm:w-[360px] bg-background flex flex-col">
                                  <SheetHeader className="px-6 py-4 border-b border-border shrink-0">
-                                    <SheetTitle className="font-display text-xl font-medium text-foreground text-left">Filters</SheetTitle>
+                                    <SheetTitle className="font-display text-xl font-medium text-foreground text-left">{t("catalog.filters")}</SheetTitle>
                                  </SheetHeader>
                                  <div className="flex-1 overflow-auto px-6 py-6">
                                     <FilterSidebar
-                                       categories={categories}
+                                       categories={pillarCategories}
                                        onCategoryChange={handleCategoryChange}
                                        selectedCategoryId={selectedCategoryId}
                                        priceRange={priceRange}
@@ -278,16 +284,16 @@ const ProductGrid = ({ categories, onCategoryChange: onCategoryChangeProp, selec
 
                      {/* Sort */}
                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground tracking-wide shrink-0 hidden sm:block">Sort by</span>
+                        <span className="text-xs text-muted-foreground tracking-wide shrink-0 hidden sm:block">{t("catalog.sortBy")}</span>
                         <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
                            <SelectTrigger className="w-44 h-8 text-sm rounded-sm border-border/60">
                               <SelectValue />
                            </SelectTrigger>
                            <SelectContent>
-                              <SelectItem value={SortOption.POPULAR}>Popular</SelectItem>
-                              <SelectItem value={SortOption.NEWEST}>Newest</SelectItem>
-                              <SelectItem value={SortOption.PRICE_LOW_TO_HIGH}>Price: Low to High</SelectItem>
-                              <SelectItem value={SortOption.PRICE_HIGH_TO_LOW}>Price: High to Low</SelectItem>
+                              <SelectItem value={SortOption.POPULAR}>{t("catalog.sortPopular")}</SelectItem>
+                              <SelectItem value={SortOption.NEWEST}>{t("catalog.sortNewest")}</SelectItem>
+                              <SelectItem value={SortOption.PRICE_LOW_TO_HIGH}>{t("catalog.sortPriceAsc")}</SelectItem>
+                              <SelectItem value={SortOption.PRICE_HIGH_TO_LOW}>{t("catalog.sortPriceDesc")}</SelectItem>
                            </SelectContent>
                         </Select>
                      </div>
@@ -296,7 +302,7 @@ const ProductGrid = ({ categories, onCategoryChange: onCategoryChangeProp, selec
                   {/* Product count */}
                   {!isInitialLoading && products.length > 0 && (
                      <p className="text-xs text-muted-foreground mb-5 tracking-wide">
-                        {products.length} {products.length === 1 ? "work" : "works"} loaded
+                        {t("catalog.worksLoaded", { count: products.length })}
                      </p>
                   )}
 
@@ -314,8 +320,8 @@ const ProductGrid = ({ categories, onCategoryChange: onCategoryChangeProp, selec
                         ))
                      ) : (
                         <div className="col-span-full text-center py-20">
-                           <p className="font-display text-2xl font-light text-foreground mb-2">No works found</p>
-                           <p className="text-sm text-muted-foreground">Try adjusting your filters</p>
+                           <p className="font-display text-2xl font-light text-foreground mb-2">{t("catalog.noWorksFound")}</p>
+                           <p className="text-sm text-muted-foreground">{t("catalog.adjustFilters")}</p>
                         </div>
                      )}
                   </div>
@@ -333,7 +339,7 @@ const ProductGrid = ({ categories, onCategoryChange: onCategoryChangeProp, selec
                   {/* All loaded */}
                   {!hasMore && products.length > 0 && !isLoadingMore && (
                      <p className="text-center text-[11px] text-muted-foreground py-8 tracking-[0.15em] uppercase">
-                        All {products.length} works shown
+                        {t("catalog.allShown", { count: products.length })}
                      </p>
                   )}
 

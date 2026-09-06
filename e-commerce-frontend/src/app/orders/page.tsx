@@ -4,9 +4,11 @@ import OrderList from './components/OrderList';
 import useDataFetch from '@/hooks/use-data-fetch';
 import * as orderServices from '@/services/shopOrder';
 import { OrderPreviewDTO } from '@/types/domains/order';
+import { useLocalization } from '@/lib/useLocalization';
 
 export default function OrdersPage() {
     const ordersData = useDataFetch(orderServices.getAllOrders);
+    const { t } = useLocalization();
 
     useEffect(() => {
         ordersData.request();
@@ -15,7 +17,7 @@ export default function OrdersPage() {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-8">My Orders</h1>
+            <h1 className="text-3xl font-bold mb-8 font-serif">{t("header.orders")}</h1>
             <OrderList orders={(ordersData.data as {content?: OrderPreviewDTO[]})?.content ?? (ordersData.data as unknown as OrderPreviewDTO[]) ?? []} />
         </div>
     );

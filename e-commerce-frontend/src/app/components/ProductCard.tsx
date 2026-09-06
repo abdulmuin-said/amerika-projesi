@@ -35,7 +35,7 @@ function getDiscountedPrice(price: number, promotion: PromotionDetails | null): 
 
 export default function ProductCard({ product, promo }: { product: ProductPreview; promo: PromotionDetails | null }) {
    const dispatch = useAppDispatch();
-   const { formatPrice, getLocalizedTitle, locale } = useLocalization();
+   const { formatPrice, getLocalizedTitle, currency, t } = useLocalization();
    const wishlistItems = useAppSelector((state) => state.wishlist.items);
    const { authenticated } = useAppSelector((state) => state.auth);
    const wishlistItem = wishlistItems.find(item => item.productVariant.productVariantId === product.productVariantId);
@@ -127,7 +127,7 @@ export default function ProductCard({ product, promo }: { product: ProductPrevie
             {hasImages ? (
                <Image
                   src={images[imgIndex]}
-                  alt={product.title}
+                  alt={getLocalizedTitle(product.title, product.titleTr)}
                   fill
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   quality={90}
@@ -143,12 +143,12 @@ export default function ProductCard({ product, promo }: { product: ProductPrevie
             <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
                {isInactive && (
                   <Badge className="rounded-none bg-black text-white border-0 text-[10px] tracking-wide px-2 py-0.5">
-                     Unavailable
+                     {t("common.outOfStock")}
                   </Badge>
                )}
                {product.quantityInStock < 10 && product.quantityInStock > 0 && !isInactive && (
                   <Badge className="rounded-sm bg-foreground text-background border-0 text-[10px] tracking-wide px-2 py-0.5">
-                     Only {product.quantityInStock} left
+                     {t("common.onlyLeft", { count: product.quantityInStock })}
                   </Badge>
                )}
             </div>
@@ -169,7 +169,7 @@ export default function ProductCard({ product, promo }: { product: ProductPrevie
                   <button
                      onClick={handleAddToCart}
                      className="sm:hidden w-6 h-6 rounded-full bg-white/50 flex items-center justify-center shadow-sm hover:bg-white/70"
-                     aria-label="Add to cart"
+                     aria-label={t("product.addToCart")}
                   >
                      <ShoppingCart className="h-3 w-3 text-foreground/70" />
                   </button>
@@ -193,10 +193,10 @@ export default function ProductCard({ product, promo }: { product: ProductPrevie
                <div className="hidden sm:block absolute bottom-0 left-0 right-0 z-10 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                   <button
                      onClick={handleAddToCart}
-                     className="w-full flex items-center justify-center gap-2 bg-[oklch(0.16_0.02_55)]/90 backdrop-blur-sm hover:bg-[oklch(0.16_0.02_55)] text-white py-3 text-xs font-medium tracking-widest uppercase transition-colors"
+                     className="w-full flex items-center justify-center gap-2 bg-[oklch(0.16_0.02_55)]/90 backdrop-blur-sm hover:bg-[oklch(0.16_0.02_55)] text-white py-3 text-xs font-medium tracking-widest uppercase transition-colors cursor-pointer"
                   >
                      <ShoppingCart className="h-3.5 w-3.5" />
-                     Add to Cart
+                     {t("product.addToCart")}
                   </button>
                </div>
             )}
@@ -230,14 +230,16 @@ export default function ProductCard({ product, promo }: { product: ProductPrevie
             <div className="mb-2" style={{ minHeight: "1.5rem" }}>
                {isDiscounted && promo && !isInactive && (
                   <Badge className="rounded-sm bg-amber-600 hover:bg-amber-600 text-white border-0 text-[10px] font-semibold tracking-wide px-2 py-0.5">
-                     {promo.promotionType === "PERCENTAGE" ? `${promo.discountValue}% OFF` : `$${promo.discountValue} OFF`}
+                     {promo.promotionType === "PERCENTAGE"
+                        ? t("common.off", { discount: promo.discountValue })
+                        : (currency === "TRY" ? t("common.offFlat", { discount: promo.discountValue }) : `$${promo.discountValue} OFF`)}
                   </Badge>
                )}
             </div>
 
             {/* Price */}
             <div className="flex items-baseline gap-2">
-               <span className="text-sm text-muted-foreground font-normal">{locale === "tr" ? "Başlangıç" : "From"}</span>
+               <span className="text-sm text-muted-foreground font-normal">{t("product.from")}</span>
                <span className="text-base font-semibold text-foreground">{formatPrice(discounted, product.priceTry)}</span>
                {isDiscounted && (
                   <span className="text-xs text-muted-foreground line-through">{formatPrice(product.price, product.priceTry)}</span>

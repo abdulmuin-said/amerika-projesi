@@ -13,22 +13,19 @@ import { FeatureProducts } from '../components/FeatureProducts';
 import useDataFetch from '@/hooks/use-data-fetch';
 import * as categoryServices from "@/services/category";
 import * as productServices from "@/services/product";
+import { useLocalization } from '@/lib/useLocalization';
 
 export default function LandingPage() {
     const router = useRouter();
-    // const { items: categories } = useAppSelector(state => state.categories);
-    // const { items: promotions } = useAppSelector(state => state.promotions);
+    const { t } = useLocalization();
     const allProductsData = useDataFetch(productServices.getAllProducts);
     const allCategories = useDataFetch(categoryServices.getAllCategories);
 
     useEffect(() => {
-        // useAppDispatch(fetchCategories());
-        // useAppDispatch(fetchPromotions());
         allProductsData.request({ status: true });
         allCategories.request();
     }, []);
 
-    // const products = productsData.response;
     const categoriesData = allCategories.data;
     const productsData = (allProductsData.data || []).filter((p) => p.status !== false);
     const bestSellerFrames = useMemo(
@@ -42,6 +39,7 @@ export default function LandingPage() {
                 .slice(0, 4),
         [productsData]
     );
+
     return (
         <div className="lg:pt-[4rem]">
             <section>
@@ -65,7 +63,7 @@ export default function LandingPage() {
                     <div className="mt-14 sm:mt-16 lg:mt-20">
                         <div className="mb-10 text-center sm:mb-12">
                             <h2 className="font-display inline-block border-b-2 border-foreground pb-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                                Featured products
+                                {t("home.featuredProducts.title")}
                             </h2>
                         </div>
                         <FeatureProducts products={productsData} />

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import useDataFetch from '@/hooks/use-data-fetch';
 import { register as registerService } from '@/services/auth';
 import type { RegistrationPayload } from '@/types/domains/auth';
+import { useLocalization } from '@/lib/useLocalization';
 
 const registerSchema = z.object({
     email: z.string().email('Invalid email address'),
@@ -31,6 +32,7 @@ const registerSchema = z.object({
 export default function RegisterPage() {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
+    const { t, locale } = useLocalization();
 
     const { request, isLoading } = useDataFetch(registerService);
 
@@ -66,16 +68,16 @@ export default function RegisterPage() {
                 router.push('/auth/login?registered=true');
             });
         } catch (err) {
-            setError('Registration failed. Please try again.');
+            setError(locale === 'tr' ? 'Kayıt işlemi başarısız oldu. Lütfen tekrar deneyin.' : 'Registration failed. Please try again.');
         }
     };
 
     return (
         <div className="container mx-auto py-10">
-            <Card className="max-w-lg mx-auto">
+            <Card className="max-w-lg mx-auto shadow-sm border-stone-200">
                 <CardHeader>
-                    <CardTitle>Create an Account</CardTitle>
-                    <CardDescription>Sign up to start shopping</CardDescription>
+                    <CardTitle className="font-serif text-2xl">{t("auth.registerTitle")}</CardTitle>
+                    <CardDescription>{t("auth.registerSubtitle")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
@@ -85,9 +87,9 @@ export default function RegisterPage() {
                                 name="fullName"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Full Name</FormLabel>
+                                        <FormLabel>{t("auth.fullNameLabel")}</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="John Doe" {...field} />
+                                            <Input placeholder={t("auth.fullNamePlaceholder")} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -98,9 +100,9 @@ export default function RegisterPage() {
                                 name="email"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Email</FormLabel>
+                                        <FormLabel>{t("auth.emailLabel")}</FormLabel>
                                         <FormControl>
-                                            <Input type="email" placeholder="john@example.com" {...field} />
+                                            <Input type="email" placeholder={t("auth.emailPlaceholder")} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -111,9 +113,9 @@ export default function RegisterPage() {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Password</FormLabel>
+                                        <FormLabel>{t("auth.passwordLabel")}</FormLabel>
                                         <FormControl>
-                                            <Input type="password" placeholder="********" {...field} />
+                                            <Input type="password" placeholder={t("auth.passwordPlaceholder")} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -124,9 +126,9 @@ export default function RegisterPage() {
                                 name="phoneNo"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Phone Number</FormLabel>
+                                        <FormLabel>{locale === "tr" ? "Telefon Numarası" : "Phone Number"}</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="+1234567890" {...field} />
+                                            <Input placeholder="+1 555 019 2834" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -134,15 +136,15 @@ export default function RegisterPage() {
                             />
 
                             <div className="space-y-4">
-                                <h3 className="text-lg font-medium">Address</h3>
+                                <h3 className="text-lg font-medium">{t("checkout.shippingAddress")}</h3>
                                 <FormField
                                     control={form.control}
                                     name="address.street"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Street</FormLabel>
+                                            <FormLabel>{t("checkout.street")}</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="123 Main St" {...field} />
+                                                <Input placeholder={locale === "tr" ? "Bağdat Cad. No: 12" : "123 Main St"} {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -154,9 +156,9 @@ export default function RegisterPage() {
                                         name="address.city"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>City</FormLabel>
+                                                <FormLabel>{t("checkout.city")}</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="New York" {...field} />
+                                                    <Input placeholder={locale === "tr" ? "İstanbul" : "New York"} {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -167,9 +169,9 @@ export default function RegisterPage() {
                                         name="address.state"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>State</FormLabel>
+                                                <FormLabel>{locale === "tr" ? "Eyalet / İl" : "State / Province"}</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="NY" {...field} />
+                                                    <Input placeholder={locale === "tr" ? "Kadıköy" : "NY"} {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -182,9 +184,9 @@ export default function RegisterPage() {
                                         name="address.country"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Country</FormLabel>
+                                                <FormLabel>{t("checkout.country")}</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="United States" {...field} />
+                                                    <Input placeholder={locale === "tr" ? "Türkiye" : "United States"} {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -195,9 +197,9 @@ export default function RegisterPage() {
                                         name="address.zipCode"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Zip Code</FormLabel>
+                                                <FormLabel>{t("checkout.pincode")}</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="10001" {...field} />
+                                                    <Input placeholder={locale === "tr" ? "34710" : "10001"} {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -210,19 +212,20 @@ export default function RegisterPage() {
                                 <div className="text-sm font-medium text-destructive">{error}</div>
                             )}
 
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between pt-2">
                                 <Button
                                     type="submit"
                                     disabled={isLoading}
+                                    className="bg-slate-900 hover:bg-slate-800 text-white"
                                 >
-                                    {isLoading ? 'Creating Account...' : 'Create Account'}
+                                    {isLoading ? (locale === 'tr' ? 'Kayıt yapılıyor...' : 'Creating Account...') : t("auth.registerButton")}
                                 </Button>
                                 <Button
                                     type="button"
                                     variant="ghost"
                                     onClick={() => router.push('/auth/login')}
                                 >
-                                    Already have an account?
+                                    {t("auth.alreadyHaveAccount")}
                                 </Button>
                             </div>
                         </form>

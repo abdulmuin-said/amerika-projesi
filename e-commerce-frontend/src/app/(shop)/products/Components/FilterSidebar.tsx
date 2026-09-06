@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, Search } from "lucide-react";
@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import { CategoryTree } from "@/types/domains/category";
+import { useLocalization } from "@/lib/useLocalization";
+import { buildPillarCategoryTree } from "@/lib/categories";
 
 const normalizeRange = (raw: [number, number]): [number, number] => {
     const min = Number.isFinite(raw[0]) ? raw[0] : 0;
@@ -37,6 +39,8 @@ const FilterSidebar = ({
 }: FilterSidebarProps) => {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { locale, currency, t } = useLocalization();
+
     const [priceRange, setPriceRange] = useState<[number, number]>(priceRangeProp ?? [0, 100000]);
     const [categorySearch, setCategorySearch] = useState("");
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(selectedCategoryIdProp || null);
@@ -86,6 +90,8 @@ const FilterSidebar = ({
         onClose?.();
     };
 
+    const pillarTree = buildPillarCategoryTree(categories, locale);
+
     const flattenCategories = (cats: CategoryTree[]): CategoryTree[] => {
         const result: CategoryTree[] = [];
         cats.forEach(cat => {
@@ -95,24 +101,24 @@ const FilterSidebar = ({
         return result;
     };
 
-    const allCategories = flattenCategories(categories);
+    const allCategories = flattenCategories(pillarTree);
     const filteredCategories = allCategories.filter(cat =>
         cat.name.toLowerCase().includes(categorySearch.toLowerCase())
     );
     const isPriceFiltered = priceRange[0] !== 0 || priceRange[1] !== 100000;
+    const currencySymbol = currency === "TRY" ? "₺" : "$";
 
     return (
         <div
             className={mobile ? "w-full flex flex-col" : "w-64 shrink-0 pr-8 border-r border-border flex flex-col"}
             style={mobile ? undefined : { height: 'calc(100vh - 5.5rem)' }}
         >
-
-            {/* Fixed header — never scrolls, hidden on mobile (Sheet has its own header) */}
+            {/* Fixed header */}
             <div className={cn("flex items-center justify-between pb-4 border-b border-border shrink-0", mobile && "hidden")}>
-                <h2 className="font-display text-xl font-medium text-foreground">Filters</h2>
+                <h2 className="font-display text-xl font-medium text-foreground">{t("catalog.filters")}</h2>
                 {isPriceFiltered && (
                     <button
-                        className="text-xs text-muted-foreground hover:text-foreground transition-colors tracking-wide"
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors tracking-wide cursor-pointer"
                         onClick={() => {
                             setPriceRange([0, 100000]);
                             const params = new URLSearchParams(searchParams.toString());
@@ -122,7 +128,7 @@ const FilterSidebar = ({
                             onPriceRangeChange?.([0, 100000]);
                         }}
                     >
-                        Clear all
+                        {t("catalog.clearAll")}
                     </button>
                 )}
             </div>
@@ -133,11 +139,11 @@ const FilterSidebar = ({
                 {/* Category Filter */}
                 <div>
                     <button
-                        className="flex items-center justify-between w-full mb-4"
+                        className="flex items-center justify-between w-full mb-4 cursor-pointer"
                         onClick={() => toggleSection('category')}
                     >
                         <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
-                            Categories
+                            {t("catalog.categoryFilter")}
                         </p>
                         <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-150 ${openSections.category ? 'rotate-180' : ''}`} />
                     </button>
@@ -147,7 +153,7 @@ const FilterSidebar = ({
                             <div className="relative mb-4">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                                 <Input
-                                    placeholder="Search categories"
+                                    placeholder={t("catalog.searchCategories")}
                                     value={categorySearch}
                                     onChange={(e) => setCategorySearch(e.target.value)}
                                     className="pl-9 h-8 text-sm rounded-sm border-border/60 bg-background"
@@ -161,9 +167,8 @@ const FilterSidebar = ({
                                             key={cat.categoryId}
                                             type="button"
                                             onClick={() => handleCategoryChange(isSelected ? "" : cat.categoryId.toString())}
-                                            className="flex items-center gap-3 w-full py-2 text-left transition-colors group border-b border-border/30 last:border-b-0"
+                                            className="flex items-center gap-3 w-full py-2 text-left transition-colors group border-b border-border/30 last:border-b-0 cursor-pointer"
                                         >
-                                            {/* Custom radio indicator */}
                                             <span className={cn(
                                                 "w-3.5 h-3.5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors",
                                                 isSelected
@@ -177,8 +182,8 @@ const FilterSidebar = ({
                                             <span className={cn(
                                                 "text-sm transition-colors",
                                                 isSelected
-                                                    ? "text-foreground font-medium"
-                                                    : "text-foreground/70 group-hover:text-foreground"
+                                                    ? "text-foreground font-semibold"
+                                                    : "text-foreground/75 group-hover:text-foreground"
                                             )}>
                                                 {cat.name}
                                             </span>
@@ -193,11 +198,11 @@ const FilterSidebar = ({
                 {/* Price Filter */}
                 <div>
                     <button
-                        className="flex items-center justify-between w-full mb-4"
+                        className="flex items-center justify-between w-full mb-4 cursor-pointer"
                         onClick={() => toggleSection('price')}
                     >
                         <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-muted-foreground">
-                            Price
+                            {t("catalog.priceFilter")} ({currencySymbol})
                         </p>
                         <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform duration-150 ${openSections.price ? 'rotate-180' : ''}`} />
                     </button>
@@ -215,13 +220,13 @@ const FilterSidebar = ({
                                 />
                             </div>
                             <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                <span>${priceRange[0].toLocaleString()}</span>
-                                <span>${priceRange[1].toLocaleString()}</span>
+                                <span>{currencySymbol}{priceRange[0].toLocaleString()}</span>
+                                <span>{currencySymbol}{priceRange[1].toLocaleString()}</span>
                             </div>
                             <div className="flex gap-2">
                                 <Input
                                     type="number"
-                                    placeholder="Min"
+                                    placeholder={t("catalog.minPrice")}
                                     value={priceRange[0]}
                                     onChange={(e) => {
                                         const v = e.target.value === "" ? 0 : Number(e.target.value);
@@ -231,7 +236,7 @@ const FilterSidebar = ({
                                 />
                                 <Input
                                     type="number"
-                                    placeholder="Max"
+                                    placeholder={t("catalog.maxPrice")}
                                     value={priceRange[1]}
                                     onChange={(e) => {
                                         const v = e.target.value === "" ? 0 : Number(e.target.value);
@@ -245,10 +250,10 @@ const FilterSidebar = ({
                 </div>
 
                 <Button
-                    className="w-full rounded-none tracking-widest text-sm font-medium h-10"
+                    className="w-full rounded-none tracking-widest text-sm font-medium h-10 cursor-pointer"
                     onClick={applyFilters}
                 >
-                    Apply Filters
+                    {t("catalog.applyFilters")}
                 </Button>
 
             </div>

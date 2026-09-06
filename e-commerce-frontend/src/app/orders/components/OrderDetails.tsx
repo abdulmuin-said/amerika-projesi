@@ -3,6 +3,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { OrderDetails, OrderStatus } from "@/types/domains/order";
 import { Package, MapPin, CreditCard, Truck, ArrowLeft, ClipboardList, CheckCircle2, Clock } from "lucide-react";
+import { useLocalization } from "@/lib/useLocalization";
 
 interface OrderDetailViewProps {
     order: OrderDetails;
@@ -35,19 +36,17 @@ const getStatusStyle = (status: OrderStatus | string) => {
     }
 };
 
-const formatDate = (date: Date | string) => {
-    if (!date) return "—";
-    return new Date(date).toLocaleDateString("en-US", {
-        day: "numeric", month: "short", year: "numeric"
-    });
-};
-
-const formatCurrency = (amount: number) =>
-    `$${(amount ?? 0).toFixed(2)}`;
-
 const OrderDetailView: React.FC<OrderDetailViewProps> = ({ order }) => {
     const router = useRouter();
+    const { t, formatPrice, locale } = useLocalization();
     const statusStyle = getStatusStyle(order.orderStatus);
+
+    const formatDate = (date: Date | string) => {
+        if (!date) return "—";
+        return new Date(date).toLocaleDateString(locale === "tr" ? "tr-TR" : "en-US", {
+            day: "numeric", month: "short", year: "numeric"
+        });
+    };
 
     const subtotal = order.orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shippingCost = order.shippingMethod?.shippingOptions?.[0]?.costFirstItem ?? 0;
@@ -65,16 +64,20 @@ const OrderDetailView: React.FC<OrderDetailViewProps> = ({ order }) => {
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>
-                    <h1 className="text-2xl sm:text-3xl font-bold flex-grow">Order Detail</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold flex-grow font-serif">
+                        {locale === 'tr' ? 'Sipariş Detayı' : 'Order Detail'}
+                    </h1>
                 </div>
 
                 {/* Order ID + Status */}
                 <div className="bg-white rounded-xl shadow-sm p-5 mb-6 hover:shadow-md transition-all">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                         <div>
-                            <p className="text-sm text-gray-500">Order ID</p>
+                            <p className="text-sm text-gray-500">{locale === 'tr' ? 'Sipariş No' : 'Order ID'}</p>
                             <p className="text-xl font-bold">#{order.shopOrderId}</p>
-                            <p className="text-sm text-gray-400 mt-1">Placed on {formatDate(order.orderDate)}</p>
+                            <p className="text-sm text-gray-400 mt-1">
+                                {locale === 'tr' ? 'Sipariş Tarihi: ' : 'Placed on '}{formatDate(order.orderDate)}
+                            </p>
                         </div>
                         <span className={`self-start sm:self-center ${statusStyle.badge} px-4 py-1.5 rounded-full text-sm font-medium`}>
                             {order.orderStatus?.replace(/_/g, " ")}
@@ -90,13 +93,13 @@ const OrderDetailView: React.FC<OrderDetailViewProps> = ({ order }) => {
                             <div className="w-10 h-10 flex items-center justify-center bg-orange-100 text-orange-600 rounded-full">
                                 <Truck className="w-5 h-5" />
                             </div>
-                            <p className="font-medium text-sm">Shipping Progress</p>
+                            <p className="font-medium text-sm">{locale === 'tr' ? 'Kargo Durumu' : 'Shipping Progress'}</p>
                         </div>
                         <div className="flex items-center text-xs mb-3 gap-2">
-                            <span className="px-2 py-1 bg-gray-100 rounded-md truncate max-w-[80px]">Origin</span>
+                            <span className="px-2 py-1 bg-gray-100 rounded-md truncate max-w-[80px]">{locale === 'tr' ? 'Çıkış' : 'Origin'}</span>
                             <div className="border-t-2 border-dashed border-gray-300 flex-grow" />
                             <span className="px-2 py-1 bg-gray-100 rounded-md truncate max-w-[80px]">
-                                {order.shippingAddress?.city || "Destination"}
+                                {order.shippingAddress?.city || (locale === 'tr' ? 'Varış' : 'Destination')}
                             </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
@@ -112,12 +115,12 @@ const OrderDetailView: React.FC<OrderDetailViewProps> = ({ order }) => {
                         <div className="w-10 h-10 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mb-3">
                             <Clock className="w-5 h-5" />
                         </div>
-                        <p className="text-gray-500 text-sm mb-1">Estimated Arrival</p>
+                        <p className="text-gray-500 text-sm mb-1">{locale === 'tr' ? 'Tahmini Teslimat' : 'Estimated Arrival'}</p>
                         <p className="font-bold text-lg">
                             {order.estimatedDeliveryDate ? formatDate(order.estimatedDeliveryDate) : "—"}
                         </p>
                         <div className="mt-3 bg-blue-50 rounded-lg px-3 py-1.5 text-blue-800 text-xs inline-flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> Delivery on schedule
+                            <CheckCircle2 className="w-3 h-3" /> {locale === 'tr' ? 'Teslimat planlandığı gibi' : 'Delivery on schedule'}
                         </div>
                     </div>
 
@@ -126,10 +129,10 @@ const OrderDetailView: React.FC<OrderDetailViewProps> = ({ order }) => {
                         <div className="w-10 h-10 flex items-center justify-center bg-purple-100 text-purple-600 rounded-full mb-3">
                             <Package className="w-5 h-5" />
                         </div>
-                        <p className="text-gray-500 text-sm mb-1">Carrier</p>
+                        <p className="text-gray-500 text-sm mb-1">{locale === 'tr' ? 'Kargo Şirketi' : 'Carrier'}</p>
                         <p className="font-bold text-lg">{order.carrierName || order.shippingProvider || "—"}</p>
                         {order.trackingNumber && (
-                            <p className="text-xs text-gray-400 mt-1">Tracking: {order.trackingNumber}</p>
+                            <p className="text-xs text-gray-400 mt-1">{locale === 'tr' ? 'Takip No: ' : 'Tracking: '}{order.trackingNumber}</p>
                         )}
                     </div>
                 </div>
@@ -137,12 +140,12 @@ const OrderDetailView: React.FC<OrderDetailViewProps> = ({ order }) => {
                 {/* Shipping + Address */}
                 <div className="bg-white rounded-xl shadow-sm p-5 mb-6 hover:shadow-md transition-all">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <MapPin className="w-5 h-5 text-gray-500" /> Delivery Information
+                        <MapPin className="w-5 h-5 text-gray-500" /> {locale === 'tr' ? 'Teslimat Bilgileri' : 'Delivery Information'}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-3">
                             <div className="p-3 bg-gray-50 rounded-lg">
-                                <p className="text-gray-500 text-xs mb-1">Recipient</p>
+                                <p className="text-gray-500 text-xs mb-1">{locale === 'tr' ? 'Alıcı' : 'Recipient'}</p>
                                 <p className="font-medium">
                                     {order.customer?.customerName ?? "—"}
                                 </p>
@@ -151,7 +154,7 @@ const OrderDetailView: React.FC<OrderDetailViewProps> = ({ order }) => {
                                 )}
                             </div>
                             <div className="p-3 bg-gray-50 rounded-lg">
-                                <p className="text-gray-500 text-xs mb-1">Delivery Address</p>
+                                <p className="text-gray-500 text-xs mb-1">{t("checkout.shippingAddress")}</p>
                                 <p className="font-medium">
                                     {order.shippingAddress?.street},&nbsp;
                                     {order.shippingAddress?.city},&nbsp;
@@ -162,15 +165,15 @@ const OrderDetailView: React.FC<OrderDetailViewProps> = ({ order }) => {
                         </div>
                         <div className="space-y-3">
                             <div className="p-3 bg-gray-50 rounded-lg">
-                                <p className="text-gray-500 text-xs mb-1">Shipping Method</p>
+                                <p className="text-gray-500 text-xs mb-1">{locale === 'tr' ? 'Kargo Yöntemi' : 'Shipping Method'}</p>
                                 <p className="font-medium">{order.shippingMethod?.name || "—"}</p>
                                 <p className="text-sm text-gray-500">
-                                    {order.shippingMethod?.processingTimeMin}–{order.shippingMethod?.processingTimeMax} days processing
+                                    {order.shippingMethod?.processingTimeMin}–{order.shippingMethod?.processingTimeMax} {locale === 'tr' ? 'gün hazırlık süresi' : 'days processing'}
                                 </p>
                             </div>
                             {order.trackingNumber && (
                                 <div className="p-3 bg-gray-50 rounded-lg">
-                                    <p className="text-gray-500 text-xs mb-1">Tracking No.</p>
+                                    <p className="text-gray-500 text-xs mb-1">{locale === 'tr' ? 'Takip No' : 'Tracking No.'}</p>
                                     <p className="font-medium font-mono">{order.trackingNumber}</p>
                                 </div>
                             )}
@@ -182,7 +185,7 @@ const OrderDetailView: React.FC<OrderDetailViewProps> = ({ order }) => {
                 <div className="mb-6">
                     <div className="flex items-center mb-4 gap-2">
                         <ClipboardList className="w-5 h-5 text-gray-600" />
-                        <h3 className="text-xl font-bold">Items</h3>
+                        <h3 className="text-xl font-bold">{locale === 'tr' ? 'Sipariş Edilen Eserler' : 'Items'}</h3>
                         <span className="ml-1 bg-gray-200 text-gray-700 rounded-full w-6 h-6 flex items-center justify-center text-sm">
                             {order.orderItems?.length ?? 0}
                         </span>
@@ -201,10 +204,10 @@ const OrderDetailView: React.FC<OrderDetailViewProps> = ({ order }) => {
                                     </div>
                                     <div className="flex-grow">
                                         <p className="font-semibold text-sm text-gray-800">{sku}</p>
-                                        <p className="text-xs text-gray-500 mt-0.5">Qty: {item.quantity}</p>
+                                        <p className="text-xs text-gray-500 mt-0.5">{locale === 'tr' ? 'Adet:' : 'Qty:'} {item.quantity}</p>
                                     </div>
                                     <p className="font-bold text-gray-900 whitespace-nowrap">
-                                        {formatCurrency(item.price * item.quantity)}
+                                        {formatPrice(item.price * item.quantity)}
                                     </p>
                                 </div>
                             );
@@ -217,16 +220,16 @@ const OrderDetailView: React.FC<OrderDetailViewProps> = ({ order }) => {
                     <div className="p-5">
                         <div className="flex justify-between items-center mb-2">
                             <h3 className="text-xl font-bold flex items-center gap-2">
-                                <CreditCard className="w-5 h-5 text-gray-500" /> Order Summary
+                                <CreditCard className="w-5 h-5 text-gray-500" /> {t("cart.orderSummary")}
                             </h3>
                             <span className="text-green-600 text-sm font-medium bg-green-50 px-3 py-1 rounded-full flex items-center gap-1">
-                                <CheckCircle2 className="w-3.5 h-3.5" /> Payment Success
+                                <CheckCircle2 className="w-3.5 h-3.5" /> {locale === 'tr' ? 'Ödeme Başarılı' : 'Payment Success'}
                             </span>
                         </div>
                         <p className="text-gray-500 text-sm mb-5">
                             {order.paymentMethod
                                 ? `•••• •••• •••• ${order.paymentMethod.last4} — ${order.paymentMethod.cardHolderName}`
-                                : "Payment details unavailable"}
+                                : (locale === 'tr' ? 'Ödeme detayları' : 'Payment details unavailable')}
                         </p>
 
                         <div className="space-y-2 mb-4">
@@ -238,40 +241,40 @@ const OrderDetailView: React.FC<OrderDetailViewProps> = ({ order }) => {
                                             {sku}
                                             <span className="text-gray-400 ml-1">×{item.quantity}</span>
                                         </span>
-                                        <span className="font-medium">{formatCurrency(item.price * item.quantity)}</span>
+                                        <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
                                     </div>
                                 );
                             })}
                             {shippingCost > 0 && (
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Shipping</span>
-                                    <span className="font-medium">{formatCurrency(shippingCost)}</span>
+                                    <span className="text-gray-600">{t("cart.shipping")}</span>
+                                    <span className="font-medium">{formatPrice(shippingCost)}</span>
                                 </div>
                             )}
                             <div className="flex justify-between font-bold pt-3 border-t border-gray-200">
-                                <span>Total</span>
-                                <span>{formatCurrency(total)}</span>
+                                <span>{locale === 'tr' ? 'Toplam' : 'Total'}</span>
+                                <span>{formatPrice(total)}</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="bg-gray-50 px-5 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <p className="font-bold text-lg">{formatCurrency(total)}</p>
-                            <p className="text-gray-500 text-sm">({order.orderItems?.length ?? 0} items)</p>
+                            <p className="font-bold text-lg">{formatPrice(total)}</p>
+                            <p className="text-gray-500 text-sm">({order.orderItems?.length ?? 0} {locale === 'tr' ? 'eser' : 'items'})</p>
                         </div>
                         <div className="flex gap-3">
                             <button
                                 onClick={() => router.push("/orders")}
                                 className="bg-white border border-gray-300 text-gray-800 rounded-full px-6 py-2.5 font-medium hover:bg-gray-100 transition-colors text-sm"
                             >
-                                My Orders
+                                {t("header.orders")}
                             </button>
                             <button
                                 onClick={() => router.push("/")}
                                 className="bg-black text-white rounded-full px-8 py-2.5 font-medium hover:bg-gray-800 transition-colors text-sm"
                             >
-                                Continue Shopping
+                                {t("cart.continueShopping")}
                             </button>
                         </div>
                     </div>

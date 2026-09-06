@@ -2,6 +2,7 @@
 import { OrderPreviewDTO, OrderStatus } from '@/types/domains/order';
 import React from 'react';
 import { Calendar, Package, CreditCard, ArrowRight } from 'lucide-react';
+import { useLocalization } from '@/lib/useLocalization';
 
 interface OrderListProps {
     orders: OrderPreviewDTO[];
@@ -22,17 +23,6 @@ const getStatusColor = (status: string | OrderStatus) => {
         case 'FAILED': return 'bg-red-100 text-red-800 border-red-200';
         default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
-};
-
-const formatDate = (date: Date | string) => {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
 };
 
 const getStatusIcon = (status: string | OrderStatus) => {
@@ -57,6 +47,19 @@ const getStatusIcon = (status: string | OrderStatus) => {
 };
 
 const OrderList: React.FC<OrderListProps> = ({ orders }) => {
+    const { t, formatPrice, locale } = useLocalization();
+
+    const formatDate = (date: Date | string) => {
+        const dateObj = typeof date === 'string' ? new Date(date) : date;
+        return dateObj.toLocaleDateString(locale === 'tr' ? 'tr-TR' : 'en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
     // Ensure orders is always an array
     const ordersArray = Array.isArray(orders) ? orders : [];
 
@@ -66,8 +69,10 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
                     <Package className="w-8 h-8 text-gray-400" />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">No orders found</h2>
-                <p className="text-gray-500">Start shopping to create your first order</p>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">{t("account.noOrders")}</h2>
+                <p className="text-gray-500">
+                    {locale === 'tr' ? 'İlk siparişinizi oluşturmak için koleksiyonlarımızı keşfedin.' : 'Start shopping to create your first order'}
+                </p>
             </div>
         );
     }
@@ -92,7 +97,7 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
                                             <Package className="w-5 h-5 text-blue-600" />
                                         </div>
                                         <div>
-                                            <p className="text-sm text-gray-500 font-medium">Order ID</p>
+                                            <p className="text-sm text-gray-500 font-medium">{locale === 'tr' ? 'Sipariş No' : 'Order ID'}</p>
                                             <p className="text-xl font-bold text-gray-900">#{order.orderId}</p>
                                         </div>
                                     </div>
@@ -112,7 +117,7 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
                             {/* Customer Info */}
                             {order.customer && (
                                 <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                                    <p className="text-xs text-gray-500 mb-1">Customer</p>
+                                    <p className="text-xs text-gray-500 mb-1">{locale === 'tr' ? 'Müşteri' : 'Customer'}</p>
                                     <p className="text-sm font-medium text-gray-900">{order.customer.customerName}</p>
                                     <p className="text-xs text-gray-600">{order.customer.email}</p>
                                 </div>
@@ -124,8 +129,8 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
                                     <CreditCard className="w-4 h-4" />
                                     <span>
                                         {order.paymentMethod.last4
-                                            ? `Card ending in ${order.paymentMethod.last4}`
-                                            : 'Payment method'
+                                            ? `${locale === 'tr' ? 'Son haneleri: ' : 'Card ending in '}${order.paymentMethod.last4}`
+                                            : (locale === 'tr' ? 'Ödeme yöntemi' : 'Payment method')
                                         }
                                     </span>
                                 </div>
@@ -134,9 +139,9 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
                             {/* Footer Section */}
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pt-4 border-t border-gray-200">
                                 <div>
-                                    <p className="text-xs text-gray-500 mb-1">Total Amount</p>
+                                    <p className="text-xs text-gray-500 mb-1">{locale === 'tr' ? 'Toplam Tutar' : 'Total Amount'}</p>
                                     <p className="text-2xl font-bold text-gray-900">
-                                        Rs. {order.totalPrice.toLocaleString('en-IN')}
+                                        {formatPrice(order.totalPrice)}
                                     </p>
                                 </div>
 
@@ -144,7 +149,7 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
                                     href={`/orders/${order.orderId}`}
                                     className="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium text-sm group"
                                 >
-                                    View Details
+                                    {t("account.viewDetails")}
                                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                 </a>
                             </div>
