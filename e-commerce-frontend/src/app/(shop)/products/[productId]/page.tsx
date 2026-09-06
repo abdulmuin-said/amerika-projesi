@@ -634,14 +634,17 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
         : true;
 
     const normalizeVariationName = (name: string): string => {
-        if (/^\d+[:/]\d+/.test(name.trim()) || /frame\s*rate/i.test(name) || /size/i.test(name)) {
+        if (/^\d+[:/]\d+/.test(name.trim()) || /size/i.test(name) || /boyut/i.test(name) || /ebat/i.test(name)) {
             return locale === "tr" ? "Boyut / Ebat" : "Size";
         }
-        if (/frame/i.test(name)) {
+        if (/fram/i.test(name) || /çerçeve/i.test(name)) {
             return locale === "tr" ? "Çerçeve Seçeneği" : "Frame Finish";
         }
-        if (/material/i.test(name)) {
+        if (/material/i.test(name) || /malzeme/i.test(name)) {
             return locale === "tr" ? "Malzeme / Yüzey" : "Material";
+        }
+        if (/illumination|led|ışık/i.test(name)) {
+            return locale === "tr" ? "Aydınlatma Seçeneği" : "Illumination";
         }
         return name.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
     };
@@ -649,26 +652,35 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
     const normalizeOptionName = (name: string): string => {
         if (locale !== "tr") return name;
         const lower = name.toLowerCase();
-        if (lower.includes("gallery wrapped") || (lower.includes("canvas") && !lower.includes("frame") && !lower.includes("rolled"))) {
+        if (lower.includes("gallery wrapped") || (lower.includes("canvas") && !lower.includes("fram") && !lower.includes("rolled"))) {
             return "Galeri Sarım Ahşap Şasi";
         }
-        if (lower.includes("black") && (lower.includes("float") || lower.includes("frame"))) {
+        if (lower.includes("black") && (lower.includes("float") || lower.includes("fram"))) {
             return "Mat Siyah Yüzen Çerçeve";
         }
-        if (lower.includes("walnut") && (lower.includes("float") || lower.includes("frame"))) {
+        if (lower.includes("walnut") && (lower.includes("float") || lower.includes("fram"))) {
             return "Ceviz Ağacı Yüzen Çerçeve";
         }
-        if ((lower.includes("oak") || lower.includes("wood") || lower.includes("natural")) && (lower.includes("float") || lower.includes("frame"))) {
-            return "Doğal Meşe Yüzen Çerçeve";
+        if ((lower.includes("oak") || lower.includes("wood") || lower.includes("natural")) && (lower.includes("float") || lower.includes("fram"))) {
+            return "Doğal Ahşap Çerçeve";
         }
-        if (lower.includes("gold") && (lower.includes("float") || lower.includes("frame"))) {
+        if (lower.includes("gold") && (lower.includes("float") || lower.includes("fram"))) {
             return "Altın Varak Yüzen Çerçeve";
         }
-        if (lower.includes("white") && (lower.includes("float") || lower.includes("frame"))) {
+        if (lower.includes("white") && (lower.includes("float") || lower.includes("fram"))) {
             return "Mat Beyaz Yüzen Çerçeve";
         }
-        if (lower.includes("silver") && (lower.includes("float") || lower.includes("frame"))) {
+        if (lower.includes("silver") && (lower.includes("float") || lower.includes("fram"))) {
             return "Gümüş Yüzen Çerçeve";
+        }
+        if (lower.includes("crisp white") && lower.includes("led")) {
+            return "Beyaz LED Aydınlatma";
+        }
+        if (lower.includes("warm ambient") && lower.includes("led")) {
+            return "Sıcak Gün Işığı LED";
+        }
+        if (lower.includes("golden amber") && lower.includes("led")) {
+            return "Kehribar Altın LED";
         }
         if (lower.includes("rolled")) {
             return "Rulo Kanvas (Tüpte)";

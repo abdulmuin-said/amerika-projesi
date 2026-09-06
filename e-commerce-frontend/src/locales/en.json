@@ -327,6 +327,7 @@
     "sendResetLink": "Send Reset Link"
   },
   "footer": {
-    "copyright": "© {year} NovaLux Studios. All rights reserved."
+    "copyright": "© {year} NovaLux Studios. All rights reserved.",
+    "allProducts": "View All Artworks"
   }
 }

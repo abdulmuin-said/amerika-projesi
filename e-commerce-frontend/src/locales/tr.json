@@ -329,6 +329,7 @@
     "sendResetLink": "Şifre Sıfırlama Bağlantısı Gönder"
   },
   "footer": {
-    "copyright": "© {year} NovaLux Studios. Tüm hakları saklıdır."
+    "copyright": "© {year} NovaLux Studios. Tüm hakları saklıdır.",
+    "allProducts": "Tüm Eserleri Gör"
   }
 }
