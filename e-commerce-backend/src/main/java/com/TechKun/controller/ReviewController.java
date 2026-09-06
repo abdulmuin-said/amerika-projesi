@@ -20,13 +20,17 @@ public class ReviewController {
 
     @GetMapping
     public ResponseEntity<List<ReviewDetails>> getReviews(
+            @AuthenticationPrincipal ShopUser loggedInUser,
             @RequestParam(required = false) Integer productId,
             @RequestParam(required = false) Integer customerId,
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size,
-            @RequestParam(required = false) String sort) {
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) Boolean approvedOnly) {
+        boolean isAdmin = loggedInUser != null && loggedInUser.isAdmin();
+        Boolean filterApproved = approvedOnly != null ? approvedOnly : (!isAdmin);
         return ResponseEntity.ok(this.reviewService.getReviews(
-                productId, customerId, page, size, sort));
+                productId, customerId, page, size, sort, filterApproved));
     }
 
     @PostMapping
@@ -44,6 +48,14 @@ public class ReviewController {
             @RequestBody ReviewDTO reviewDTO) {
         return ResponseEntity.ok(this.reviewService.editReview(
                 loggedInUser, reviewId, reviewDTO));
+    }
+
+    @PatchMapping("/{reviewId}/toggle-approval")
+    public ResponseEntity<Review> toggleApproval(
+            @AuthenticationPrincipal ShopUser loggedInUser,
+            @PathVariable Integer reviewId) {
+        return ResponseEntity.ok(this.reviewService.toggleApproval(
+                loggedInUser, reviewId));
     }
 
     @DeleteMapping("/{reviewId}")

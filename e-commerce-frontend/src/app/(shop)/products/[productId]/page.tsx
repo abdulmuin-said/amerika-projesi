@@ -646,6 +646,36 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
         return name.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
     };
 
+    const normalizeOptionName = (name: string): string => {
+        if (locale !== "tr") return name;
+        const lower = name.toLowerCase();
+        if (lower.includes("gallery wrapped") || (lower.includes("canvas") && !lower.includes("frame") && !lower.includes("rolled"))) {
+            return "Galeri Sarım Ahşap Şasi";
+        }
+        if (lower.includes("black") && (lower.includes("float") || lower.includes("frame"))) {
+            return "Mat Siyah Yüzen Çerçeve";
+        }
+        if (lower.includes("walnut") && (lower.includes("float") || lower.includes("frame"))) {
+            return "Ceviz Ağacı Yüzen Çerçeve";
+        }
+        if ((lower.includes("oak") || lower.includes("wood") || lower.includes("natural")) && (lower.includes("float") || lower.includes("frame"))) {
+            return "Doğal Meşe Yüzen Çerçeve";
+        }
+        if (lower.includes("gold") && (lower.includes("float") || lower.includes("frame"))) {
+            return "Altın Varak Yüzen Çerçeve";
+        }
+        if (lower.includes("white") && (lower.includes("float") || lower.includes("frame"))) {
+            return "Mat Beyaz Yüzen Çerçeve";
+        }
+        if (lower.includes("silver") && (lower.includes("float") || lower.includes("frame"))) {
+            return "Gümüş Yüzen Çerçeve";
+        }
+        if (lower.includes("rolled")) {
+            return "Rulo Kanvas (Tüpte)";
+        }
+        return name;
+    };
+
     return (
         <>
         <div className="max-w-[1600px] mx-auto w-full px-6 md:px-10">
@@ -898,7 +928,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                                     ))}
                                 </Rating>
                                 <span className="text-sm text-muted-foreground">
-                                    {productRating.averageRating.toFixed(1)} ({productRating.reviewCount} {productRating.reviewCount === 1 ? "review" : "reviews"})
+                                    {productRating.averageRating.toFixed(1)} ({productRating.reviewCount} {locale === "tr" ? "değerlendirme" : (productRating.reviewCount === 1 ? "review" : "reviews")})
                                 </span>
                             </div>
                         )}
@@ -938,7 +968,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                                                                 : `$${discLo.toFixed(2)} – $${discHi.toFixed(2)}`);
                                                         return (
                                                             <SelectItem key={optKey} value={optKey}>
-                                                                {optValue.name}
+                                                                {normalizeOptionName(optValue.name)}
                                                                 <span className="text-muted-foreground ml-2">{priceLabel}</span>
                                                             </SelectItem>
                                                         );
@@ -1080,13 +1110,15 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                                 <span className="text-sm font-medium">{getShippingMethodFetch.data.name}</span>
                             </div>
                             <p className="text-xs text-muted-foreground pl-6">
-                                Processing: {getShippingMethodFetch.data.processingTimeMin}–{getShippingMethodFetch.data.processingTimeMax} business days
+                                {locale === "tr"
+                                    ? `Hazırlık Süresi: ${getShippingMethodFetch.data.processingTimeMin}–${getShippingMethodFetch.data.processingTimeMax} iş günü`
+                                    : `Processing: ${getShippingMethodFetch.data.processingTimeMin}–${getShippingMethodFetch.data.processingTimeMax} business days`}
                             </p>
                             {getShippingMethodFetch.data.shippingOptions.length > 0 && (
                                 <div className="pl-6 space-y-1">
                                     {getShippingMethodFetch.data.shippingOptions.slice(0, 2).map((opt, i) => (
                                         <p key={i} className="text-xs text-muted-foreground">
-                                            {opt.carrier} · {opt.destinationCountry} · {opt.estimatedDeliveryMin}–{opt.estimatedDeliveryMax} days · ${opt.costFirstItem.toFixed(2)}
+                                            {opt.carrier} · {opt.destinationCountry} · {locale === "tr" ? `${opt.estimatedDeliveryMin}–${opt.estimatedDeliveryMax} iş günü` : `${opt.estimatedDeliveryMin}–${opt.estimatedDeliveryMax} business days`} · {formatPrice(opt.costFirstItem)}
                                         </p>
                                     ))}
                                 </div>

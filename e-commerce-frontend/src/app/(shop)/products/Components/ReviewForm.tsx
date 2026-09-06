@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,13 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Rating, RatingButton } from "@/components/ui/rating";
 import { Send, Pencil } from "lucide-react";
-
-const reviewFormSchema = z.object({
-  rating: z.number().min(1, "Please give a rating."),
-  reviewText: z.string().min(10, "Review must be at least 10 characters."),
-});
-
-type ReviewFormData = z.infer<typeof reviewFormSchema>;
+import Link from "next/link";
+import { useLocalization } from "@/lib/useLocalization";
 
 interface ReviewFormProps {
   productId: number;
@@ -47,6 +42,15 @@ export const ReviewForm = ({
   isSubmitting = false,
   loginRequired = false,
 }: ReviewFormProps) => {
+  const { t } = useLocalization();
+
+  const reviewFormSchema = useMemo(() => z.object({
+    rating: z.number().min(1, t("reviews.selectRating")),
+    reviewText: z.string().min(10, t("reviews.minChars")),
+  }), [t]);
+
+  type ReviewFormData = z.infer<typeof reviewFormSchema>;
+
   const form = useForm<ReviewFormData>({
     resolver: zodResolver(reviewFormSchema),
     defaultValues: {
@@ -73,13 +77,6 @@ export const ReviewForm = ({
   }, [initialData, mode, reset]);
 
   const onFormSubmit = (data: ReviewFormData) => {
-    // Log to verify the data being sent
-    console.log("Submitting review data:", {
-      productId,
-      rating: data.rating,
-      reviewText: data.reviewText.trim(),
-    });
-
     onSubmit({
       productId,
       rating: data.rating,
@@ -129,7 +126,7 @@ export const ReviewForm = ({
               <FormControl>
                 <Textarea
                   {...field}
-                  placeholder="Write your review here..."
+                  placeholder={t("reviews.reviewPlaceholder")}
                   rows={5}
                   className="resize-none"
                 />
@@ -142,8 +139,10 @@ export const ReviewForm = ({
         {/* Login notice */}
         {loginRequired && (
           <p className="text-sm text-muted-foreground">
-            You need to be logged in to submit a review.{" "}
-            <a href="/login" className="text-foreground underline underline-offset-2 font-medium">Login</a>
+            {t("reviews.loginRequired")}{" "}
+            <Link href="/auth/login" className="text-foreground underline underline-offset-2 font-medium">
+              {t("reviews.login")}
+            </Link>
           </p>
         )}
 
@@ -153,19 +152,19 @@ export const ReviewForm = ({
             {isSubmitting ? (
               <>
                 <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2" />
-                {mode === "edit" ? "Updating..." : "Submitting..."}
+                {mode === "edit" ? t("reviews.updating") : t("reviews.submitting")}
               </>
             ) : (
               <>
                 {mode === "edit" ? (
                   <>
                     <Pencil className="w-4 h-4 mr-2" />
-                    Update Review
+                    {t("reviews.editReview")}
                   </>
                 ) : (
                   <>
                     <Send className="w-4 h-4 mr-2" />
-                    Submit Review
+                    {t("reviews.submitReview")}
                   </>
                 )}
               </>
@@ -174,7 +173,7 @@ export const ReviewForm = ({
 
           {onCancel && (
             <Button type="button" variant="outline" className="rounded-none" onClick={onCancel}>
-              Cancel
+              {t("reviews.cancel")}
             </Button>
           )}
         </div>

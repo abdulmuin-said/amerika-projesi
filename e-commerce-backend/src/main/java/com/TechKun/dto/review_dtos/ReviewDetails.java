@@ -14,7 +14,10 @@ public class ReviewDetails {
     private String reviewTextTr;
     private CustomerContact customer;
     private Integer productId;
+    private String productTitle;
+    private String productTitleTr;
     private Integer rating;
     private LocalDateTime dateOfSubmission;
     private Boolean verifiedPurchase;
+    private Boolean isApproved;
 }

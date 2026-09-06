@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ShieldCheck } from "lucide-react";
+import { useLocalization } from "@/lib/useLocalization";
 
 export function VisaIcon({ className = "h-4 w-auto" }: { className?: string }) {
     return (
@@ -125,15 +126,17 @@ export function PaymentBadgesGroup({ theme = "light", className = "" }: PaymentB
 }
 
 export function ProductDetailPaymentTrustBox() {
+    const { locale } = useLocalization();
+
     return (
         <div className="border border-stone-200/90 rounded-xl p-3 sm:p-3.5 bg-stone-50/70 space-y-2">
             <div className="flex items-center justify-between flex-wrap gap-1.5">
                 <span className="text-[11px] font-semibold text-stone-700 uppercase tracking-wider flex items-center gap-1.5">
                     <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-                    Guaranteed Safe & Secure Checkout
+                    {locale === "tr" ? "Güvenli ve Korumalı Ödeme Altyapısı" : "Guaranteed Safe & Secure Checkout"}
                 </span>
                 <span className="text-[10px] text-stone-500 font-medium tracking-wide">
-                    256-Bit SSL Encryption
+                    {locale === "tr" ? "256-Bit SSL Şifreleme" : "256-Bit SSL Encryption"}
                 </span>
             </div>
             <PaymentBadgesGroup theme="light" />

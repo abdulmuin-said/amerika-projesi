@@ -4,11 +4,12 @@ import { Review, ReviewDetails, ReviewDTO } from "@/types/domains/review";
 
 export const getReviews: ServiceFunction<[
     productId?: number, customerId?: number,
-    page?: number, size?: number, sort?: string
-], ReviewDetails[]> = (productId, customerId, page, size, sort) => {
+    page?: number, size?: number, sort?: string,
+    approvedOnly?: boolean
+], ReviewDetails[]> = (productId, customerId, page, size, sort, approvedOnly) => {
     return servicesApiClient.get(
         `/reviews`,
-        { params: { productId, customerId, page, size, sort } }
+        { params: { productId, customerId, page, size, sort, approvedOnly } }
     );
 };
 
@@ -22,4 +23,8 @@ export const editReview: ServiceFunction<[reviewId: number, reviewDTO: ReviewDTO
 
 export const deleteReview: ServiceFunction<[reviewId: number], void> = (reviewId) => {
     return servicesApiClient.delete(`/reviews/${reviewId}`);
+};
+
+export const toggleReviewApproval: ServiceFunction<[reviewId: number], Review> = (reviewId) => {
+    return servicesApiClient.patch(`/reviews/${reviewId}/toggle-approval`);
 };

@@ -30,6 +30,9 @@ public class Review {
     @Column(name = "review_text_tr")
     private String reviewTextTr;
 
+    @Column(name = "is_approved", nullable = false)
+    private Boolean isApproved = true;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private ShopUser user;

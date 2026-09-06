@@ -96,10 +96,10 @@ export const ProductReviews = ({
           dateOfSubmission: new Date(newReview.dateOfSubmission),
         };
         setReviews(prev => [newReviewForList, ...prev]);
-        toast.success("Review submitted!");
+        toast.success(t("reviews.submittedSuccess"));
       })
       .onError((error) => {
-        toast.error("Failed to submit review: " + error);
+        toast.error((locale === "tr" ? "Yorum gönderilemedi: " : "Failed to submit review: ") + error);
       });
   };
 
@@ -125,10 +125,10 @@ export const ProductReviews = ({
             : review
         ));
         setEditingReview(null);
-        toast.success("Review updated!");
+        toast.success(locale === "tr" ? "Yorumunuz güncellendi!" : "Review updated!");
       })
       .onError((error) => {
-        toast.error("Failed to update review: " + error);
+        toast.error((locale === "tr" ? "Güncelleme başarısız: " : "Failed to update review: ") + error);
       });
   };
 
@@ -138,10 +138,10 @@ export const ProductReviews = ({
       .onSuccess(() => {
         setReviews(prev => prev.filter(r => r.reviewId !== confirmDeleteId));
         setConfirmDeleteId(null);
-        toast.success("Review deleted.");
+        toast.success(locale === "tr" ? "Yorum silindi." : "Review deleted.");
       })
       .onError((error) => {
-        toast.error("Failed to delete review: " + error);
+        toast.error((locale === "tr" ? "Silme işlemi başarısız: " : "Failed to delete review: ") + error);
         setConfirmDeleteId(null);
       });
   };

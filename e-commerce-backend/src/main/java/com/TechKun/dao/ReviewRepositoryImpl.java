@@ -27,6 +27,9 @@ public class ReviewRepositoryImpl implements ReviewRepositoryExtension {
         reviewDetails.setReviewId((Integer) item.get("review_id"));
         reviewDetails.setReviewText((String) item.get("review_text"));
         reviewDetails.setReviewTextTr((String) item.get("review_text_tr"));
+        reviewDetails.setProductTitle((String) item.get("product_title"));
+        reviewDetails.setProductTitleTr((String) item.get("product_title_tr"));
+        reviewDetails.setIsApproved(item.get("is_approved") == null || (Boolean) item.get("is_approved"));
         CustomerContact customerContact = new CustomerContact();
         customerContact.setCustomerId((Integer) item.get("user_id"));
         customerContact.setCustomerName((String) item.get("full_name"));
@@ -41,7 +44,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryExtension {
     }
 
     @Override
-    public List<ReviewDetails> getReviews(Integer productId, Integer customerId, Integer page, Integer size, String sort) {
+    public List<ReviewDetails> getReviews(Integer productId, Integer customerId, Integer page, Integer size, String sort, Boolean approvedOnly) {
         String orderBy = switch (sort != null ? sort : "NEWEST") {
             case "HIGHEST_RATED" -> "ORDER BY r.rating DESC, r.date_of_submission DESC";
             case "LOWEST_RATED"  -> "ORDER BY r.rating ASC, r.date_of_submission DESC";
@@ -52,6 +55,9 @@ public class ReviewRepositoryImpl implements ReviewRepositoryExtension {
                         r.review_id,
                         r.review_text,
                         r.review_text_tr,
+                        r.is_approved,
+                        p.title AS product_title,
+                        p.title_tr AS product_title_tr,
                         c.user_id,
                         c.full_name,
                         c.email,
@@ -70,15 +76,18 @@ public class ReviewRepositoryImpl implements ReviewRepositoryExtension {
                         ) AS verified_purchase
                     FROM review r
                     JOIN shop_user c ON r.user_id = c.user_id
+                    JOIN product p ON r.product_id = p.product_id
                     WHERE (CAST(:productId AS INTEGER) IS NULL OR r.product_id = CAST(:productId AS INTEGER))
                     AND (CAST(:customerId AS INTEGER) IS NULL OR r.user_id = CAST(:customerId AS INTEGER))
+                    AND (CAST(:approvedOnly AS BOOLEAN) IS NULL OR CAST(:approvedOnly AS BOOLEAN) = false OR r.is_approved = true)
                 """ + orderBy;
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> result = this.em.createNativeQuery(nativeQuery, Map.class)
                 .setParameter("productId", productId)
                 .setParameter("customerId", customerId)
-                .setFirstResult(page * size)
-                .setMaxResults(size)
+                .setParameter("approvedOnly", approvedOnly)
+                .setFirstResult(page != null && size != null ? page * size : 0)
+                .setMaxResults(size != null ? size : 50)
                 .getResultList();
         return result.stream()
                 .map(this::mapToReviewDetails)
@@ -91,6 +100,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryExtension {
                     SELECT
                         r.review_id,
                         r.review_text,
+                        r.review_text_tr,
+                        r.is_approved,
                         r.user_id,
                         r.product_id,
                         r.rating,
@@ -109,6 +120,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryExtension {
         Review review = new Review();
         review.setReviewId((Integer) result.get("review_id"));
         review.setReviewText((String) result.get("review_text"));
+        review.setReviewTextTr((String) result.get("review_text_tr"));
+        review.setIsApproved(result.get("is_approved") == null || (Boolean) result.get("is_approved"));
         review.setUser(new ShopUser((Integer) result.get("user_id")));
         review.setProduct(new Product((Integer) result.get("product_id")));
         review.setRating(((Number) result.get("rating")).floatValue());
@@ -123,6 +136,10 @@ public class ReviewRepositoryImpl implements ReviewRepositoryExtension {
                     SELECT
                         r.review_id,
                         r.review_text,
+                        r.review_text_tr,
+                        r.is_approved,
+                        p.title AS product_title,
+                        p.title_tr AS product_title_tr,
                         c.user_id,
                         c.full_name,
                         c.email,
@@ -132,6 +149,8 @@ public class ReviewRepositoryImpl implements ReviewRepositoryExtension {
                         r.date_of_submission
                     FROM review r
                     JOIN shop_user c ON r.user_id = c.user_id
+                    JOIN product p ON r.product_id = p.product_id
+                    WHERE r.is_approved = true
                     ORDER BY r.rating DESC
                     LIMIT 3
                 """;

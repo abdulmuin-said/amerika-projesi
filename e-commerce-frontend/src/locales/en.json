@@ -104,14 +104,14 @@
       "cta": "Explore Now"
     },
     "valueProps": {
-      "securePayment": "Secure Payment",
-      "securePaymentDesc": "256-bit encrypted global checkout via PayTR",
-      "freeShipping": "Free Worldwide Delivery",
-      "freeShippingDesc": "Insured courier shipping on all orders",
-      "deliveredWithCare": "Museum-Grade Care",
-      "deliveredWithCareDesc": "Heavy-duty custom reinforced wooden crating",
-      "excellentService": "Lifetime Quality Guarantee",
-      "excellentServiceDesc": "Fade-resistant archival pigment guarantee"
+      "securePayment": "Secure Checkout",
+      "securePaymentDesc": "256-bit encrypted bank-grade checkout",
+      "freeShipping": "Insured Shipping",
+      "freeShippingDesc": "Guaranteed damage-free transit on all orders",
+      "deliveredWithCare": "Careful Packaging",
+      "deliveredWithCareDesc": "Heavy-duty impact-resistant protective boxing",
+      "excellentService": "Fine Art Craftsmanship",
+      "excellentServiceDesc": "High-resolution 12-color archival pigment print"
     },
     "shopByCategory": {
       "badge": "Browse Our Archive",
@@ -191,7 +191,11 @@
     "from": "From",
     "price": "Price",
     "sku": "SKU",
-    "inStock": "In Stock — Ready to ship",
+    "inStock": "In Stock — Made to Order",
+    "craftingTime": "Production & Crafting: 2–3 Business Days",
+    "guaranteedCheckout": "Guaranteed Safe & Secure Checkout",
+    "reviewsCount": "{count} reviews",
+    "turkeyShipping": "Free Insured Shipping · Worldwide Delivery",
     "lowStock": "Low Stock — Only {count} pieces left",
     "outOfStock": "Out of Stock",
     "addToCart": "Add to Cart",
@@ -230,6 +234,14 @@
     "readLess": "Read less",
     "noReviewsYet": "No reviews yet. Be the first to share your experience with this artwork!",
     "submitReview": "Submit Review",
+    "updating": "Updating...",
+    "submitting": "Submitting...",
+    "cancel": "Cancel",
+    "loginRequired": "You need to be logged in to submit a review.",
+    "login": "Login",
+    "minChars": "Review must be at least 10 characters.",
+    "selectRating": "Please select a rating.",
+    "submittedSuccess": "Your review has been submitted successfully!",
     "reviewPlaceholder": "Share your thoughts about the print quality, frame craftsmanship, and delivery experience...",
     "moderator": "Moderator"
   },
@@ -313,5 +325,8 @@
     "alreadyHaveAccount": "Already have an account?",
     "resetPasswordTitle": "Reset Password",
     "sendResetLink": "Send Reset Link"
+  },
+  "footer": {
+    "copyright": "© {year} NovaLux Studios. All rights reserved."
   }
 }

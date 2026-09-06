@@ -147,11 +147,11 @@ export default function Header() {
                 {/* ── MOBILE layout (<sm) ── */}
                 <div className="relative flex sm:hidden h-full items-center px-3">
 
-                    {/* Left: hamburger + wishlist */}
-                    <div className="flex items-center gap-0.5">
+                    {/* Left: hamburger */}
+                    <div className="flex items-center">
                         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
                             <SheetTrigger asChild>
-                                <Button variant="ghost" size="icon" aria-label="Open menu" className="hover:bg-white/10 text-white">
+                                <Button variant="ghost" size="icon" aria-label="Open menu" className="hover:bg-white/10 text-white h-9 w-9">
                                     <Menu className="h-5 w-5" />
                                 </Button>
                             </SheetTrigger>
@@ -170,6 +170,15 @@ export default function Header() {
                                         </SheetClose>
                                     </SheetTitle>
                                 </SheetHeader>
+
+                                {/* Quick language switch in drawer */}
+                                <div className="px-5 py-3 border-b border-border/40 bg-stone-100/50 flex items-center justify-between">
+                                    <span className="text-xs font-medium text-muted-foreground">
+                                        {locale === "tr" ? "Bölge & Para Birimi" : "Region & Currency"}
+                                    </span>
+                                    <LanguageCurrencyToggle className="bg-stone-800 text-white border-stone-700 hover:bg-stone-700" />
+                                </div>
+
                                 <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2">
                                     <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-2">
                                         {t("header.account")}
@@ -218,50 +227,23 @@ export default function Header() {
                                 </div>
                             </SheetContent>
                         </Sheet>
-
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={t("header.wishlist")}
-                            onClick={() => setWishlistOpen(true)}
-                            className="relative hover:bg-white/10"
-                        >
-                            <Heart className={cn("h-5 w-5", mounted && wishlistItems.length > 0 ? "fill-red-400 text-red-400" : "text-white/80")} />
-                            {mounted && wishlistItems.length > 0 && (
-                                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-medium leading-none">
-                                    {wishlistItems.length > 9 ? "9+" : wishlistItems.length}
-                                </span>
-                            )}
-                            <span className="sr-only">{t("header.wishlist")}</span>
-                        </Button>
                     </div>
 
-                    {/* Center: logo absolutely centered */}
-                    <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center leading-none text-center whitespace-nowrap select-none group">
-                        <span className="font-display text-[19px] font-semibold tracking-[0.14em] text-white uppercase">
+                    {/* Center: logo cleanly centered without overlap */}
+                    <Link href="/" className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center leading-none text-center whitespace-nowrap select-none group pointer-events-auto">
+                        <span className="font-display text-[17px] font-semibold tracking-[0.14em] text-white uppercase">
                             NovaLux
                         </span>
-                        <span className="text-[8px] font-sans font-medium tracking-[0.45em] text-[#c9a84c] uppercase pl-1 mt-0.5">
+                        <span className="text-[7.5px] font-sans font-medium tracking-[0.42em] text-[#c9a84c] uppercase pl-1 mt-0.5">
                             Studios
                         </span>
                     </Link>
 
-                    {/* Right: language + account + cart */}
+                    {/* Right: language pill + cart icon */}
                     <div className="ml-auto flex items-center gap-1">
                         <LanguageCurrencyToggle />
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" aria-label={t("header.myAccount")} className="hover:bg-white/10">
-                                    <UserRound className={cn("h-5 w-5", mounted && authenticated ? "text-[#c9a84c]" : "text-white/80")} />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <UserMenuContent />
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
                         <Link href="/cart">
-                            <Button variant="ghost" size="icon" aria-label={t("header.cart")} className="relative hover:bg-white/10">
+                            <Button variant="ghost" size="icon" aria-label={t("header.cart")} className="relative hover:bg-white/10 h-9 w-9">
                                 <ShoppingCart className="h-5 w-5 text-white/80" />
                                 {mounted && cartTotalItems > 0 && (
                                     <span className="absolute -top-0.5 -right-0.5 bg-[#c9a84c] text-[oklch(0.16_0.02_55)] text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-medium leading-none">

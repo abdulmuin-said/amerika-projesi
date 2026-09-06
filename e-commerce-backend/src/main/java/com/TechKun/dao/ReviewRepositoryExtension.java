@@ -12,7 +12,8 @@ public interface ReviewRepositoryExtension {
         Integer customerId,
         Integer page,
         Integer size,
-        String sort
+        String sort,
+        Boolean approvedOnly
     );
 
     Optional<Review> getLiteReview(Integer reviewId);

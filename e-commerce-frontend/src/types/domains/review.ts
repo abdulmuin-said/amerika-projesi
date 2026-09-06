@@ -14,9 +14,11 @@ export interface ReviewDetails {
     customer: CustomerContact;
     productId: number;
     productTitle: string;
+    productTitleTr?: string;
     rating: number;
     dateOfSubmission: Date;
     verifiedPurchase?: boolean;
+    isApproved?: boolean;
 }
 
 export interface Review {
@@ -27,4 +29,5 @@ export interface Review {
     reviewText: string;
     reviewTextTr?: string;
     user: ShopUser;
+    isApproved?: boolean;
 }
