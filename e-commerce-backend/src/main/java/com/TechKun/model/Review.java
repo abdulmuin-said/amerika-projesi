@@ -27,6 +27,9 @@ public class Review {
     @Column(name = "review_text", nullable = false)
     private String reviewText;
 
+    @Column(name = "review_text_tr")
+    private String reviewTextTr;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private ShopUser user;

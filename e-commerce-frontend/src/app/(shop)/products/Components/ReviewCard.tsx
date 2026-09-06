@@ -10,6 +10,7 @@ interface ReviewCardProps {
   review: {
     reviewId: number;
     reviewText: string;
+    reviewTextTr?: string;
     customer: {
       customerId: number;
       customerName: string;
@@ -33,9 +34,11 @@ export const ReviewCard = ({
   isOwner = false,
   canModerate = false,
 }: ReviewCardProps) => {
-  const { t, locale, getLocalizedReview } = useLocalization();
+  const { t, locale } = useLocalization();
   const [expanded, setExpanded] = useState(false);
-  const localizedText = getLocalizedReview(review.reviewText);
+  const localizedText = locale === "tr" 
+    ? (review.reviewTextTr || review.reviewText) 
+    : (review.reviewText || review.reviewTextTr || "");
   const isLong = localizedText.length > 220;
 
   const customerInitials = review.customer.customerName

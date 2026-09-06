@@ -10,6 +10,7 @@ export interface ReviewDTO {
 export interface ReviewDetails {
     reviewId: number;
     reviewText: string;
+    reviewTextTr?: string;
     customer: CustomerContact;
     productId: number;
     productTitle: string;
@@ -24,5 +25,6 @@ export interface Review {
     dateOfSubmission: Date;
     rating: number;
     reviewText: string;
+    reviewTextTr?: string;
     user: ShopUser;
 }

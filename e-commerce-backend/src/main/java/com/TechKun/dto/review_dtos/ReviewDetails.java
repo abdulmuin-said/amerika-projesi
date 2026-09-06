@@ -11,6 +11,7 @@ import com.TechKun.dto.CustomerContact;
 public class ReviewDetails {
     private Integer reviewId;
     private String reviewText;
+    private String reviewTextTr;
     private CustomerContact customer;
     private Integer productId;
     private Integer rating;

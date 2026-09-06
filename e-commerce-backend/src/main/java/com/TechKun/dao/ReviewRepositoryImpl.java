@@ -26,6 +26,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryExtension {
         ReviewDetails reviewDetails = new ReviewDetails();
         reviewDetails.setReviewId((Integer) item.get("review_id"));
         reviewDetails.setReviewText((String) item.get("review_text"));
+        reviewDetails.setReviewTextTr((String) item.get("review_text_tr"));
         CustomerContact customerContact = new CustomerContact();
         customerContact.setCustomerId((Integer) item.get("user_id"));
         customerContact.setCustomerName((String) item.get("full_name"));
@@ -50,6 +51,7 @@ public class ReviewRepositoryImpl implements ReviewRepositoryExtension {
                     SELECT
                         r.review_id,
                         r.review_text,
+                        r.review_text_tr,
                         c.user_id,
                         c.full_name,
                         c.email,
