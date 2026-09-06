@@ -17,29 +17,59 @@ import { setLocale, setCurrency, SupportedLocale, SupportedCurrency } from "@/st
 
 setAutoFreeze(false);
 
+// Helper function to auto-detect Turkish vs International visitor
+function detectUserLocaleAndCurrency(): { locale: SupportedLocale; currency: SupportedCurrency } {
+   try {
+      const languages = (typeof navigator !== "undefined" && navigator.languages && navigator.languages.length > 0)
+         ? Array.from(navigator.languages)
+         : [typeof navigator !== "undefined" ? (navigator.language || "") : ""];
+
+      const isTurkishLang = languages.some((lang) => {
+         const l = lang.toLowerCase();
+         return l.startsWith("tr") || l === "tr-tr";
+      });
+
+      let isTurkishTimeZone = false;
+      try {
+         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone.toLowerCase();
+         if (tz.includes("istanbul") || tz.includes("turkey")) {
+            isTurkishTimeZone = true;
+         }
+      } catch {
+         // ignore timezone error
+      }
+
+      if (isTurkishLang || isTurkishTimeZone) {
+         return { locale: "tr", currency: "TRY" };
+      }
+   } catch {
+      // ignore
+   }
+
+   return { locale: "en", currency: "USD" };
+}
+
 export function AppGateway({ children }: { children: React.ReactNode }) {
    const dispatch = useAppDispatch();
    const { authenticated, user } = useAppSelector(state => state.auth);
    const currentLocale = useAppSelector(state => state.locale.locale);
 
-   // Auto-detect & hydrate locale / currency from localStorage or browser preferences
+   // Auto-detect & hydrate locale / currency from browser preferences or user selection
    useEffect(() => {
       try {
+         const userExplicitlySelected = localStorage.getItem("novalux_user_selected_locale") === "true";
          const storedLocale = localStorage.getItem("novalux_locale") as SupportedLocale | null;
          const storedCurrency = localStorage.getItem("novalux_currency") as SupportedCurrency | null;
 
-         if (storedLocale && (storedLocale === "en" || storedLocale === "tr")) {
+         if (userExplicitlySelected && storedLocale && (storedLocale === "en" || storedLocale === "tr")) {
             dispatch(setLocale(storedLocale));
             if (storedCurrency && (storedCurrency === "USD" || storedCurrency === "TRY")) {
                dispatch(setCurrency(storedCurrency));
             }
             document.documentElement.lang = storedLocale;
          } else {
-            // Check browser language
-            const browserLang = (navigator.language || (navigator.languages && navigator.languages[0]) || "").toLowerCase();
-            const detectedLocale: SupportedLocale = browserLang.startsWith("tr") ? "tr" : "en";
-            const detectedCurrency: SupportedCurrency = detectedLocale === "tr" ? "TRY" : "USD";
-
+            // Automatic detection based on browser and timezone
+            const { locale: detectedLocale, currency: detectedCurrency } = detectUserLocaleAndCurrency();
             dispatch(setLocale(detectedLocale));
             dispatch(setCurrency(detectedCurrency));
             localStorage.setItem("novalux_locale", detectedLocale);
@@ -49,7 +79,7 @@ export function AppGateway({ children }: { children: React.ReactNode }) {
       } catch {
          // Silently handle SSR or restricted localStorage environments
       }
-   }, []);
+   }, [dispatch]);
 
    // Keep <html> lang attribute in sync with state
    useEffect(() => {

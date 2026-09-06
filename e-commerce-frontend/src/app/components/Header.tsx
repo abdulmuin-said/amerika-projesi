@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Search, Heart, UserRound, Menu, ChevronRight } from "lucide-react";
+import { ShoppingCart, Search, Heart, UserRound, Menu, ChevronRight, Check } from "lucide-react";
 import UserMenuContent from "./UserMenuContent";
 import CategoriesBar from "./CategoriesBar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -82,7 +82,7 @@ export default function Header() {
     const isProductDetailPage = /^\/products\/[^/]+/.test(pathname);
     const isHomePage = pathname === '/';
     const categories = useAppSelector((state) => state.categories.items);
-    const { locale, t } = useLocalization();
+    const { locale, t, switchLocale } = useLocalization();
 
     const pillarCategories = buildPillarCategoryTree(categories, locale);
 
@@ -171,12 +171,41 @@ export default function Header() {
                                     </SheetTitle>
                                 </SheetHeader>
 
-                                {/* Quick language switch in drawer */}
-                                <div className="px-5 py-3 border-b border-border/40 bg-stone-100/50 flex items-center justify-between">
-                                    <span className="text-xs font-medium text-muted-foreground">
-                                        {locale === "tr" ? "Bölge & Para Birimi" : "Region & Currency"}
-                                    </span>
-                                    <LanguageCurrencyToggle className="bg-stone-800 text-white border-stone-700 hover:bg-stone-700" />
+                                {/* Dedicated language & currency switch in drawer */}
+                                <div className="px-5 py-3.5 border-b border-border/40 bg-stone-100/70">
+                                    <p className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground mb-2">
+                                        {locale === "tr" ? "Bölge ve Para Birimi" : "Region & Currency"}
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => switchLocale("tr")}
+                                            className={cn(
+                                                "flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-xs font-semibold transition-all",
+                                                locale === "tr"
+                                                    ? "bg-[#c9a84c] text-stone-950 border-[#c9a84c] shadow-sm font-bold"
+                                                    : "bg-white text-stone-700 border-stone-200 hover:border-stone-300"
+                                            )}
+                                        >
+                                            <span className="text-sm">🇹🇷</span>
+                                            <span>TR · ₺</span>
+                                            {locale === "tr" && <Check className="h-3.5 w-3.5 ml-0.5 text-stone-950" />}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => switchLocale("en")}
+                                            className={cn(
+                                                "flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-xs font-semibold transition-all",
+                                                locale === "en"
+                                                    ? "bg-[#c9a84c] text-stone-950 border-[#c9a84c] shadow-sm font-bold"
+                                                    : "bg-white text-stone-700 border-stone-200 hover:border-stone-300"
+                                            )}
+                                        >
+                                            <span className="text-sm">🇺🇸</span>
+                                            <span>US · $</span>
+                                            {locale === "en" && <Check className="h-3.5 w-3.5 ml-0.5 text-stone-950" />}
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2">
@@ -239,14 +268,41 @@ export default function Header() {
                         </span>
                     </Link>
 
-                    {/* Right: language pill + cart icon */}
-                    <div className="ml-auto flex items-center gap-1">
-                        <LanguageCurrencyToggle />
+                    {/* Right: Wishlist, Account, Cart */}
+                    <div className="ml-auto flex items-center gap-0.5">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label={t("header.wishlist")}
+                            onClick={() => setWishlistOpen(true)}
+                            className="relative hover:bg-white/10 text-white h-9 w-9 p-0"
+                        >
+                            <Heart className={cn("h-5 w-5", mounted && wishlistItems.length > 0 ? "fill-red-400 text-red-400" : "text-white/80")} />
+                            {mounted && wishlistItems.length > 0 && (
+                                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[9px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-medium leading-none">
+                                    {wishlistItems.length > 9 ? "9+" : wishlistItems.length}
+                                </span>
+                            )}
+                            <span className="sr-only">{t("header.wishlist")}</span>
+                        </Button>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" aria-label={t("header.account")} className="hover:bg-white/10 text-white h-9 w-9 p-0">
+                                    <UserRound className={cn("h-5 w-5", mounted && authenticated ? "text-[#c9a84c]" : "text-white/80")} />
+                                    <span className="sr-only">{t("header.account")}</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56">
+                                <UserMenuContent />
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
                         <Link href="/cart">
-                            <Button variant="ghost" size="icon" aria-label={t("header.cart")} className="relative hover:bg-white/10 h-9 w-9">
+                            <Button variant="ghost" size="icon" aria-label={t("header.cart")} className="relative hover:bg-white/10 text-white h-9 w-9 p-0">
                                 <ShoppingCart className="h-5 w-5 text-white/80" />
                                 {mounted && cartTotalItems > 0 && (
-                                    <span className="absolute -top-0.5 -right-0.5 bg-[#c9a84c] text-[oklch(0.16_0.02_55)] text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-medium leading-none">
+                                    <span className="absolute -top-0.5 -right-0.5 bg-[#c9a84c] text-[oklch(0.16_0.02_55)] text-[9px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-medium leading-none">
                                         {cartTotalItems > 9 ? "9+" : cartTotalItems}
                                     </span>
                                 )}

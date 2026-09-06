@@ -138,6 +138,7 @@ export function useLocalization() {
             if (typeof window !== "undefined") {
                 localStorage.setItem("novalux_locale", newLocale);
                 localStorage.setItem("novalux_currency", newLocale === "tr" ? "TRY" : "USD");
+                localStorage.setItem("novalux_user_selected_locale", "true");
                 document.documentElement.lang = newLocale;
             }
         },
@@ -152,6 +153,7 @@ export function useLocalization() {
             dispatch(setCurrency(newCurrency));
             if (typeof window !== "undefined") {
                 localStorage.setItem("novalux_currency", newCurrency);
+                localStorage.setItem("novalux_user_selected_locale", "true");
             }
         },
         [dispatch]
