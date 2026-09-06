@@ -328,6 +328,9 @@
   },
   "footer": {
     "copyright": "© {year} NovaLux Studios. All rights reserved.",
-    "allProducts": "View All Artworks"
+    "allProducts": "View All Artworks",
+    "shippingReturns": "Shipping & Returns",
+    "termsConditions": "Terms & Conditions",
+    "privacyPolicy": "Privacy Policy"
   }
 }

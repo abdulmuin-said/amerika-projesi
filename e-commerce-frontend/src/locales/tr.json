@@ -330,6 +330,9 @@
   },
   "footer": {
     "copyright": "© {year} NovaLux Studios. Tüm hakları saklıdır.",
-    "allProducts": "Tüm Eserleri Gör"
+    "allProducts": "Tüm Eserleri Gör",
+    "shippingReturns": "Teslimat ve İade",
+    "termsConditions": "Kullanım Koşulları",
+    "privacyPolicy": "Gizlilik Politikası"
   }
 }
