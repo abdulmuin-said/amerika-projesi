@@ -8,6 +8,7 @@ import * as productServices from "@/services/product";
 import useDataFetch from "@/hooks/use-data-fetch";
 import { useAppSelector } from "@/store/hooks";
 import { getPromotionForProduct } from "@/lib/utils";
+import { useLocalization } from "@/lib/useLocalization";
 
 interface BestSellerProps {
     products?: ProductPreview[];
@@ -15,6 +16,7 @@ interface BestSellerProps {
 }
 
 const BestSeller = ({ products: productsProp = [], selectedCategoryId }: BestSellerProps) => {
+    const { locale } = useLocalization();
     const productsData = useDataFetch(productServices.getAllProducts);
     const promotions = useAppSelector((state) => state.promotions.items);
 
@@ -37,10 +39,12 @@ const BestSeller = ({ products: productsProp = [], selectedCategoryId }: BestSel
 
                 <div className="mb-8">
                     <p className="text-[11px] font-semibold tracking-[0.25em] uppercase text-[#c9a84c] mb-2">
-                        Top Picks
+                        {locale === "tr" ? "Öne Çıkan Eserler" : "Top Picks"}
                     </p>
                     <h2 className="font-display text-3xl font-medium text-foreground">
-                        {selectedCategoryId !== null ? "Category Best Sellers" : "Best Sellers"}
+                        {selectedCategoryId !== null 
+                            ? (locale === "tr" ? "Kategorinin En Çok Satanları" : "Category Best Sellers") 
+                            : (locale === "tr" ? "En Çok Satanlar" : "Best Sellers")}
                     </h2>
                 </div>
 
@@ -57,7 +61,9 @@ const BestSeller = ({ products: productsProp = [], selectedCategoryId }: BestSel
                     </div>
                 ) : (
                     <div className="text-center text-muted-foreground py-10">
-                        <p className="font-display text-2xl font-light">No featured works yet</p>
+                        <p className="font-display text-2xl font-light">
+                            {locale === "tr" ? "Bu kategoride henüz öne çıkan eser bulunmuyor" : "No featured works yet"}
+                        </p>
                     </div>
                 )}
 

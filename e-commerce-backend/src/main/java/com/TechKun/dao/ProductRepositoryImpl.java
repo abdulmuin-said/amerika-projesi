@@ -141,7 +141,7 @@ public class ProductRepositoryImpl implements ProductRepositoryExtension {
                 )
                 SELECT category_id FROM descendant_categories
             ))
-            AND (CAST(:searchInput AS text) IS NULL OR TRIM(CAST(:searchInput AS text)) = '' OR p.title ILIKE '%' || CAST(:searchInput AS text) || '%')
+            AND (CAST(:searchInput AS text) IS NULL OR TRIM(CAST(:searchInput AS text)) = '' OR p.title ILIKE '%' || CAST(:searchInput AS text) || '%' OR (p.title_tr IS NOT NULL AND p.title_tr ILIKE '%' || CAST(:searchInput AS text) || '%'))
             AND (CAST(:status AS boolean) IS NULL OR p.status = CAST(:status AS boolean))
             AND (CAST(:excludeProductId AS int) IS NULL OR p.product_id != CAST(:excludeProductId AS int))
         """;

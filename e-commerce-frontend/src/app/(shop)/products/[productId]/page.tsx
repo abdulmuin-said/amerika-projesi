@@ -33,6 +33,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { addToWishlistAsync, removeFromWishlistAsync } from "@/store/slices/wishlistSlice";
 import { ProductDetailPaymentTrustBox } from "@/app/components/PaymentBadges";
 import { useLocalization } from "@/lib/useLocalization";
+import { extractProductId, getProductUrl } from "@/lib/slug";
 
 type VariationMap = {
     [variationId: number]: {
@@ -72,7 +73,9 @@ const GENERIC_PRODUCT_DETAILS_TR = [
 ];
 
 export default function ProductDetailsPage({ params }: { params: Promise<{ productId: string }> }) {
-    const { productId } = React.use(params);
+    const rawParam = React.use(params).productId;
+    const numericProductId = extractProductId(rawParam);
+    const productId = String(numericProductId);
     const dispatch = useAppDispatch();
     const router = useRouter();
     const { formatPrice, getLocalizedTitle, getLocalizedDescription, locale, currency, t } = useLocalization();
@@ -300,6 +303,15 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ produ
                 });
         }
     }, [productId]);
+
+    // Keep canonical localized SEO slug in URL bar without full page reload
+    useEffect(() => {
+        if (!product || isNaN(numericProductId)) return;
+        const canonicalUrl = getProductUrl(product, locale);
+        if (typeof window !== "undefined" && window.location.pathname !== canonicalUrl) {
+            window.history.replaceState(null, "", canonicalUrl);
+        }
+    }, [product, locale, numericProductId]);
 
     useEffect(() => {
         if (product) {

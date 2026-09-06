@@ -9,17 +9,28 @@ import { useAppSelector } from '@/store/hooks';
 function ProductsContent() {
     const searchParams = useSearchParams();
     const categoriesData = useAppSelector((state) => state.categories.items);
-    const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(() => {
+        const catId = searchParams.get("categoryId");
+        if (catId) {
+            const parsed = parseInt(catId, 10);
+            return !isNaN(parsed) ? parsed : null;
+        }
+        return null;
+    });
 
     useEffect(() => {
-        if (!searchParams.get("categoryId")) {
+        const catId = searchParams.get("categoryId");
+        if (catId) {
+            const parsed = parseInt(catId, 10);
+            setSelectedCategoryId(!isNaN(parsed) ? parsed : null);
+        } else {
             setSelectedCategoryId(null);
         }
     }, [searchParams]);
 
     return (
         <>
-            <BannerSection />
+            <BannerSection selectedCategoryId={selectedCategoryId} />
             <ProductGrid
                 categories={categoriesData || []}
                 products={[]}

@@ -18,7 +18,31 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping
-    public ResponseEntity<List<ProductPreview>> getAllProducts(@RequestBody ProductQueryOptions filters) {
+    public ResponseEntity<List<ProductPreview>> getAllProducts(
+            @RequestBody(required = false) ProductQueryOptions filters,
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) String searchInput,
+            @RequestParam(required = false) ProductQueryOptions.SortOption sortOption,
+            @RequestParam(required = false) Integer priceRangeMin,
+            @RequestParam(required = false) Integer priceRangeMax,
+            @RequestParam(required = false) Boolean status,
+            @RequestParam(required = false) Integer limit,
+            @RequestParam(required = false) Integer offset,
+            @RequestParam(required = false) Integer excludeProductId
+    ) {
+        if (filters == null) {
+            filters = new ProductQueryOptions();
+        }
+        if (categoryId != null) filters.setCategoryId(categoryId);
+        if (searchInput != null) filters.setSearchInput(searchInput);
+        if (sortOption != null) filters.setSortOption(sortOption);
+        if (priceRangeMin != null) filters.setPriceRangeMin(priceRangeMin);
+        if (priceRangeMax != null) filters.setPriceRangeMax(priceRangeMax);
+        if (status != null) filters.setStatus(status);
+        if (limit != null) filters.setLimit(limit);
+        if (offset != null) filters.setOffset(offset);
+        if (excludeProductId != null) filters.setExcludeProductId(excludeProductId);
+
         return ResponseEntity.ok(this.productService.getAllProducts(filters));
     }
 

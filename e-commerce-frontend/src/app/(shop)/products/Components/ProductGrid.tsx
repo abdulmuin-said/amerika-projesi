@@ -12,7 +12,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import FilterSidebar from "./FilterSidebar";
 import { ProductPreview, ProductQueryOptions, SortOption } from "@/types/domains/product";
 import { CategoryTree } from "@/types/domains/category";
@@ -45,7 +45,7 @@ interface ProductGridProps {
 
 const ProductGrid = ({ categories, onCategoryChange: onCategoryChangeProp, selectedCategoryId: selectedCategoryIdProp }: ProductGridProps) => {
    const { t, locale, currency } = useLocalization();
-   const pillarCategories = buildPillarCategoryTree(categories, locale);
+   const pillarCategories = useMemo(() => buildPillarCategoryTree(categories, locale), [categories, locale]);
    const [gridColumns, setGridColumns] = useState(3);
    const userOverrideRef = useRef(false);
    const [sheetOpen, setSheetOpen] = useState(false);

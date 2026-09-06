@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { addToCart } from "@/store/slices/cartSlice";
 import { addToWishlistAsync, removeFromWishlistAsync } from "@/store/slices/wishlistSlice";
 import { useLocalization } from "@/lib/useLocalization";
+import { getProductUrl } from "@/lib/slug";
 
 function NoImagePlaceholder() {
    return (
@@ -35,7 +36,7 @@ function getDiscountedPrice(price: number, promotion: PromotionDetails | null): 
 
 export default function ProductCard({ product, promo }: { product: ProductPreview; promo: PromotionDetails | null }) {
    const dispatch = useAppDispatch();
-   const { formatPrice, getLocalizedTitle, currency, t } = useLocalization();
+   const { formatPrice, getLocalizedTitle, currency, locale, t } = useLocalization();
    const wishlistItems = useAppSelector((state) => state.wishlist.items);
    const { authenticated } = useAppSelector((state) => state.auth);
    const wishlistItem = wishlistItems.find(item => item.productVariant.productVariantId === product.productVariantId);
@@ -115,7 +116,7 @@ export default function ProductCard({ product, promo }: { product: ProductPrevie
    };
 
    return (
-      <Link href={`/products/${product.productId}`} className="block w-full group">
+      <Link href={getProductUrl(product, locale)} className="block w-full group">
 
          {/* Image */}
          <div
