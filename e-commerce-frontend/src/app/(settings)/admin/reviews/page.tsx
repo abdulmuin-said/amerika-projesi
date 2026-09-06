@@ -239,7 +239,7 @@ export default function AdminReviewsPage() {
                     <div className="flex items-center gap-1.5">
                         <Filter className="w-4 h-4 text-muted-foreground" />
                         <span className="text-xs text-muted-foreground font-medium">Durum:</span>
-                        <Select value={statusFilter} onValueChange={(val: any) => setStatusFilter(val)}>
+                        <Select value={statusFilter} onValueChange={(val: "ALL" | "APPROVED" | "PENDING") => setStatusFilter(val)}>
                             <SelectTrigger className="w-36 h-9">
                                 <SelectValue placeholder="Durum seç" />
                             </SelectTrigger>
