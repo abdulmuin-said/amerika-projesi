@@ -1,5 +1,6 @@
 package com.TechKun.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -8,14 +9,16 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @Table(name = "Review")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_id", nullable = false)
     private Integer reviewId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "category", "variations", "images", "tags"})
     private Product product;
 
     @Column(name = "date_of_submission", nullable = false)
@@ -33,8 +36,9 @@ public class Review {
     @Column(name = "is_approved", nullable = false)
     private Boolean isApproved = true;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password", "authorities"})
     private ShopUser user;
 
     @PrePersist

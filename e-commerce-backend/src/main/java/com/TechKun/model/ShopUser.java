@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.TechKun.model.enums.UserRole;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
@@ -14,6 +15,7 @@ import java.util.Set;
 @Entity
 @Table(name = "ShopUser")
 @Data
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ShopUser implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
